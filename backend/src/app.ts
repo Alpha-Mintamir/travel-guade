@@ -14,10 +14,10 @@ const app = express();
 app.use(helmet());
 
 // CORS
-const allowedOrigins = env.ALLOWED_ORIGINS.split(',');
+const allowedOrigins = env.ALLOWED_ORIGINS;
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: allowedOrigins === '*' ? true : allowedOrigins.split(','),
     credentials: true,
   })
 );
