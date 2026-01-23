@@ -1,14 +1,15 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import app from '../src/app';
+import { connectDatabase } from '../src/config/database';
 
-// Simple test handler first
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+let isDbConnected = false;
+
+export default async function handler(req: any, res: any) {
   try {
-    // Dynamically import to catch any initialization errors
-    const { default: app } = await import('../src/app');
-    const { connectDatabase } = await import('../src/config/database');
-    
-    // Connect to database
-    await connectDatabase();
+    // Connect to database once
+    if (!isDbConnected) {
+      await connectDatabase();
+      isDbConnected = true;
+    }
     
     // Pass to Express
     return app(req, res);
