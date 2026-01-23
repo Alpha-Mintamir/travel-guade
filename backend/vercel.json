@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "api/index.ts",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["prisma/**", "node_modules/.prisma/**", "node_modules/@prisma/client/**"]
+      }
     }
   ],
   "routes": [
@@ -12,5 +15,5 @@
       "dest": "/api/index.ts"
     }
   ],
-  "installCommand": "npm install && npx prisma generate"
+  "buildCommand": "npx prisma generate"
 }
