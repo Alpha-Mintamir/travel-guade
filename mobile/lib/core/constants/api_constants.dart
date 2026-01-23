@@ -1,6 +1,9 @@
 abstract class ApiConstants {
-  // Base URL - Connected to TravelBro Backend
-  static const String baseUrl = 'http://10.61.4.107:3000/api';
+  // Base URL - Production API on Vercel
+  static const String baseUrl = 'https://travel-guade-fukm.vercel.app/api';
+  
+  // Local development URL (uncomment for local testing)
+  // static const String baseUrl = 'http://10.61.4.107:3000/api';
   
   // Auth endpoints
   static const String login = '/auth/login';
