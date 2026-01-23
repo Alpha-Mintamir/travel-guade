@@ -65,10 +65,11 @@ export class TripController {
     }
   }
 
-  static async uploadTripPhoto(req: Request, res: Response, next: NextFunction) {
+  static async uploadTripPhoto(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       if (!req.file) {
-        return ApiResponse.error(res, 'No photo uploaded', 400);
+        ApiResponse.error(res, 'No photo uploaded', 400);
+        return;
       }
 
       const photoUrl = await CloudinaryService.uploadImage(

@@ -15,11 +15,6 @@ export class RequestService {
             fullName: true,
           },
         },
-        destination: {
-          select: {
-            name: true,
-          },
-        },
       },
     });
 
@@ -56,7 +51,6 @@ export class RequestService {
       include: {
         trip: {
           include: {
-            destination: true,
             creator: {
               select: {
                 id: true,
@@ -83,7 +77,7 @@ export class RequestService {
       userId: trip.userId,
       type: 'TRIP_REQUEST',
       title: 'New Trip Request',
-      body: `${request.requester.fullName} wants to join your trip to ${trip.destination.name}`,
+      body: `${request.requester.fullName} wants to join your trip to ${trip.destinationName}`,
       data: {
         requestId: request.id,
         tripId: trip.id,
@@ -138,15 +132,7 @@ export class RequestService {
     const request = await prisma.tripRequest.findUnique({
       where: { id: requestId },
       include: {
-        trip: {
-          include: {
-            destination: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
+        trip: true,
         requester: {
           select: {
             id: true,
@@ -172,7 +158,6 @@ export class RequestService {
       include: {
         trip: {
           include: {
-            destination: true,
             creator: {
               select: {
                 id: true,
@@ -198,8 +183,8 @@ export class RequestService {
     const notificationType = status === RequestStatus.ACCEPTED ? 'REQUEST_ACCEPTED' : 'REQUEST_REJECTED';
     const notificationBody =
       status === RequestStatus.ACCEPTED
-        ? `Your request to join the trip to ${request.trip.destination.name} was accepted!`
-        : `Your request to join the trip to ${request.trip.destination.name} was declined.`;
+        ? `Your request to join the trip to ${request.trip.destinationName} was accepted!`
+        : `Your request to join the trip to ${request.trip.destinationName} was declined.`;
 
     await NotificationService.createNotification({
       userId: request.requesterId,
@@ -221,7 +206,6 @@ export class RequestService {
       include: {
         trip: {
           include: {
-            destination: true,
             creator: {
               select: {
                 id: true,
@@ -248,11 +232,7 @@ export class RequestService {
         },
       },
       include: {
-        trip: {
-          include: {
-            destination: true,
-          },
-        },
+        trip: true,
         requester: {
           select: {
             id: true,
