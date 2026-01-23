@@ -1,0 +1,286 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DestinationType {
+  CITY
+  HISTORICAL
+  NATURE
+  CULTURAL
+}
+
+enum BudgetLevel {
+  BUDGET
+  MEDIUM
+  MODERATE
+  COMFORT
+  LUXURY
+}
+
+enum TravelStyle {
+  ADVENTURE
+  RELAXATION
+  CULTURAL
+  PHOTOGRAPHY
+  BACKPACKING
+  LUXURY
+  FOOD
+  NATURE
+}
+
+enum TripStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum NotificationType {
+  TRIP_REQUEST
+  REQUEST_ACCEPTED
+  REQUEST_REJECTED
+  NEW_MESSAGE
+  TRIP_UPDATE
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
+model User {
+  id                String    @id @default(uuid())
+  name              String    // Required by Better Auth
+  email             String    @unique
+  emailVerified     Boolean   @default(false) @map("email_verified")
+  image             String?   // Better Auth convention for profile photo
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  
+  // Custom fields for TravelBro
+  fullName          String    @map("full_name")
+  profilePhotoUrl   String?   @map("profile_photo_url")
+  cityOfResidence   String?   @map("city_of_residence")
+  bio               String?
+  travelPreferences String?   @map("travel_preferences")
+
+  // Better Auth relations
+  sessions          Session[]
+  accounts          Account[]
+
+  // TravelBro relations
+  trips             Trip[]
+  sentRequests      TripRequest[]   @relation("RequestSender")
+  sentMessages      Message[]       @relation("MessageSender")
+  receivedMessages  Message[]       @relation("MessageReceiver")
+  notifications     Notification[]
+  reportsMade       Report[]        @relation("Reporter")
+  reportsReceived   Report[]        @relation("ReportedUser")
+  blockedUsers      Block[]         @relation("Blocker")
+  blockedByUsers    Block[]         @relation("Blocked")
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id           String @id
+  accountId    String
+  providerId   String
+  userId       String
+  accessToken  String?
+  refreshToken String?
+  idToken      String?
+  accessTokenExpiresAt DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope        String?
+  password     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
+  @@map("verification")
+}
+
+model Destination {
+  id             Int              @id @default(autoincrement())
+  name           String
+  region         String
+  type           DestinationType
+  latitude       Float
+  longitude      Float
+  imageUrl       String?          @map("image_url")
+  isHeritageSite Boolean          @default(false) @map("is_heritage_site")
+  description    String?
+  trips          Trip[]
+
+  @@map("destinations")
+}
+
+model Trip {
+  id            String      @id @default(uuid())
+  userId        String      @map("user_id")
+  destinationId Int?        @map("destination_id")
+  destinationName String    @map("destination_name")  // Free text destination
+  startDate     DateTime    @map("start_date")
+  endDate       DateTime    @map("end_date")
+  flexibleDates Boolean     @default(false) @map("flexible_dates")
+  description   String?
+  peopleNeeded  Int         @default(1) @map("people_needed")
+  budgetLevel   BudgetLevel @map("budget_level")
+  travelStyle   TravelStyle @map("travel_style")
+  status        TripStatus  @default(ACTIVE)
+  
+  // Trip photo and contact info
+  photoUrl          String?   @map("photo_url")
+  instagramUsername String    @map("instagram_username")
+  phoneNumber       String?   @map("phone_number")
+  telegramUsername  String?   @map("telegram_username")
+  
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  creator       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destination   Destination?   @relation(fields: [destinationId], references: [id])
+  requests      TripRequest[]
+
+  @@index([userId])
+  @@index([destinationId])
+  @@index([startDate])
+  @@index([status])
+  @@map("trips")
+}
+
+model TripRequest {
+  id          String        @id @default(uuid())
+  tripId      String        @map("trip_id")
+  requesterId String        @map("requester_id")
+  message     String?
+  status      RequestStatus @default(PENDING)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  trip        Trip          @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  requester   User          @relation("RequestSender", fields: [requesterId], references: [id], onDelete: Cascade)
+  messages    Message[]
+
+  @@unique([tripId, requesterId])
+  @@index([tripId])
+  @@index([requesterId])
+  @@index([status])
+  @@map("trip_requests")
+}
+
+model Message {
+  id            String   @id @default(uuid())
+  senderId      String   @map("sender_id")
+  receiverId    String   @map("receiver_id")
+  tripRequestId String   @map("trip_request_id")
+  content       String
+  isRead        Boolean  @default(false) @map("is_read")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  sender        User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver      User         @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  tripRequest   TripRequest  @relation(fields: [tripRequestId], references: [id], onDelete: Cascade)
+
+  @@index([tripRequestId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@map("messages")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+model Report {
+  id             String       @id @default(uuid())
+  reporterId     String       @map("reporter_id")
+  reportedUserId String       @map("reported_user_id")
+  reason         String
+  details        String?
+  status         ReportStatus @default(PENDING)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  reporter       User         @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser   User         @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+
+  @@index([reporterId])
+  @@index([reportedUserId])
+  @@index([status])
+  @@map("reports")
+}
+
+model Block {
+  id        String   @id @default(uuid())
+  blockerId String   @map("blocker_id")
+  blockedId String   @map("blocked_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+  @@map("blocks")
+}
