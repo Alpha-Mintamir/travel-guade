@@ -1,17 +1,8 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import app from '../src/app';
 import { connectDatabase } from '../src/config/database';
 
-// Track if database is connected
-let isConnected = false;
+// Connect to database on cold start
+connectDatabase().catch(console.error);
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Connect to database once
-  if (!isConnected) {
-    await connectDatabase();
-    isConnected = true;
-  }
-  
-  // Let Express handle the request
-  return app(req, res);
-}
+// Export Express app as default for Vercel
+export default app;
