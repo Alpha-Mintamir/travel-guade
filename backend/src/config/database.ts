@@ -32,7 +32,11 @@ export async function connectDatabase() {
     logger.info('✅ Database connected successfully');
   } catch (error) {
     logger.error({ error }, '❌ Database connection failed');
-    process.exit(1);
+    // Don't exit in serverless - let the request fail gracefully
+    if (!process.env.VERCEL) {
+      process.exit(1);
+    }
+    throw error;
   }
 }
 
