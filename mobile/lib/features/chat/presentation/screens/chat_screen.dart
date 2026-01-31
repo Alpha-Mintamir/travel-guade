@@ -187,28 +187,43 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _buildEmptyMessages(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.chat_bubble_outline,
-            size: 64,
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
-          ),
-          const SizedBox(height: AppTheme.spacingMD),
-          Text(
-            'No messages yet',
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          const SizedBox(height: AppTheme.spacingSM),
-          Text(
-            'Start the conversation!',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(AppTheme.spacingXL),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColors.warmCoral.withOpacity(isDark ? 0.15 : 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.chat_bubble_outline,
+                size: 48,
+                color: AppColors.warmCoral,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingLG),
+            Text(
+              'No messages yet',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingSM),
+            Text(
+              'Say hello and start planning your trip together!',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -252,6 +267,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _buildDateHeader(DateTime date) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     String dateText;
     final now = DateTime.now();
     final diff = now.difference(date);
@@ -268,15 +284,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingMD),
       child: Center(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(12),
+            color: isDark 
+                ? AppColors.darkCard 
+                : AppColors.softTeal.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark 
+                  ? Colors.grey[700]! 
+                  : AppColors.softTeal.withOpacity(0.3),
+            ),
           ),
           child: Text(
             dateText,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: isDark ? AppColors.softTeal : AppColors.deepTeal,
+                  fontWeight: FontWeight.w500,
                 ),
           ),
         ),
@@ -291,6 +315,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _buildTypingIndicator(String userName) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppTheme.spacingMD,
@@ -298,17 +324,31 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       child: Row(
         children: [
-          const SizedBox(
-            width: 40,
-            child: _TypingDots(),
-          ),
-          const SizedBox(width: AppTheme.spacingSM),
-          Text(
-            '$userName is typing...',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                  fontStyle: FontStyle.italic,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark 
+                  ? AppColors.darkCard 
+                  : AppColors.softTeal.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  width: 32,
+                  child: _TypingDots(),
                 ),
+                const SizedBox(width: AppTheme.spacingSM),
+                Text(
+                  '$userName is typing...',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: isDark ? AppColors.softTeal : AppColors.deepTeal,
+                        fontStyle: FontStyle.italic,
+                      ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -316,6 +356,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _buildInputArea() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       padding: EdgeInsets.only(
         left: AppTheme.spacingMD,
@@ -327,45 +369,75 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
         ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
-            child: TextField(
-              controller: _messageController,
-              focusNode: _focusNode,
-              onChanged: _onTyping,
-              decoration: InputDecoration(
-                hintText: 'Type a message...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surfaceVariant,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark 
+                    ? AppColors.darkCard 
+                    : AppColors.softTeal.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: isDark 
+                      ? Colors.grey[700]! 
+                      : AppColors.softTeal.withOpacity(0.3),
                 ),
               ),
-              textCapitalization: TextCapitalization.sentences,
-              maxLines: 4,
-              minLines: 1,
-              onSubmitted: (_) => _sendMessage(),
+              child: TextField(
+                controller: _messageController,
+                focusNode: _focusNode,
+                onChanged: _onTyping,
+                decoration: InputDecoration(
+                  hintText: 'Type a message...',
+                  hintStyle: TextStyle(color: AppColors.textSecondary),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                ),
+                textCapitalization: TextCapitalization.sentences,
+                maxLines: 4,
+                minLines: 1,
+                onSubmitted: (_) => _sendMessage(),
+              ),
             ),
           ),
           const SizedBox(width: AppTheme.spacingSM),
-          IconButton(
-            onPressed: _sendMessage,
-            icon: const Icon(Icons.send),
-            style: IconButton.styleFrom(
-              backgroundColor: AppColors.warmCoral,
-              foregroundColor: Colors.white,
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.warmCoral, AppColors.warmCoral.withRed(240)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.warmCoral.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _sendMessage,
+                borderRadius: BorderRadius.circular(24),
+                child: const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Icon(Icons.send, color: Colors.white, size: 22),
+                ),
+              ),
             ),
           ),
         ],
@@ -385,6 +457,8 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTheme.spacingSM),
       child: Row(
@@ -392,41 +466,66 @@ class _MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isMe) ...[
-            CircleAvatar(
-              radius: 14,
-              backgroundImage: message.sender?.profilePhotoUrl != null
-                  ? CachedNetworkImageProvider(message.sender!.profilePhotoUrl!)
-                  : null,
-              backgroundColor: AppColors.softTeal,
-              child: message.sender?.profilePhotoUrl == null
-                  ? Text(
-                      message.sender?.fullName.substring(0, 1).toUpperCase() ?? '?',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    )
-                  : null,
+            Container(
+              padding: const EdgeInsets.all(1.5),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [AppColors.deepTeal, AppColors.softTeal],
+                ),
+              ),
+              child: CircleAvatar(
+                radius: 14,
+                backgroundColor: Theme.of(context).cardColor,
+                backgroundImage: message.sender?.profilePhotoUrl != null
+                    ? CachedNetworkImageProvider(message.sender!.profilePhotoUrl!)
+                    : null,
+                child: message.sender?.profilePhotoUrl == null
+                    ? Text(
+                        message.sender?.fullName.substring(0, 1).toUpperCase() ?? '?',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.deepTeal,
+                        ),
+                      )
+                    : null,
+              ),
             ),
             const SizedBox(width: AppTheme.spacingSM),
           ],
           Flexible(
             child: Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 10,
+                horizontal: 16,
+                vertical: 12,
               ),
               decoration: BoxDecoration(
-                color: isMe
-                    ? AppColors.warmCoral
-                    : Theme.of(context).colorScheme.surfaceVariant,
+                gradient: isMe
+                    ? LinearGradient(
+                        colors: [AppColors.warmCoral, AppColors.warmCoral.withRed(240)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: isMe 
+                    ? null 
+                    : isDark 
+                        ? AppColors.darkCard 
+                        : AppColors.softTeal.withOpacity(0.2),
                 borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isMe ? 16 : 4),
-                  bottomRight: Radius.circular(isMe ? 4 : 16),
+                  topLeft: const Radius.circular(18),
+                  topRight: const Radius.circular(18),
+                  bottomLeft: Radius.circular(isMe ? 18 : 4),
+                  bottomRight: Radius.circular(isMe ? 4 : 18),
                 ),
+                boxShadow: isMe ? [
+                  BoxShadow(
+                    color: AppColors.warmCoral.withOpacity(0.2),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ] : null,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -435,9 +534,10 @@ class _MessageBubble extends StatelessWidget {
                     message.content,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: isMe ? Colors.white : null,
+                          height: 1.4,
                         ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -507,6 +607,8 @@ class _TypingDotsState extends State<_TypingDots>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -525,10 +627,12 @@ class _TypingDotsState extends State<_TypingDots>
               child: Transform.translate(
                 offset: Offset(0, -4 * animation.value),
                 child: Container(
-                  width: 8,
-                  height: 8,
+                  width: 6,
+                  height: 6,
                   decoration: BoxDecoration(
-                    color: AppColors.textSecondary.withOpacity(0.6),
+                    color: isDark 
+                        ? AppColors.softTeal.withOpacity(0.8) 
+                        : AppColors.deepTeal.withOpacity(0.6),
                     shape: BoxShape.circle,
                   ),
                 ),

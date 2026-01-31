@@ -186,21 +186,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.editProfile),
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _saveProfile,
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text(AppStrings.save),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(
@@ -212,255 +202,719 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar Section
-              Center(
-                child: Column(
-                  children: [
-                    GestureDetector(
-                      onTap: _openAvatarPicker,
-                      child: Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 50,
-                            backgroundColor: AppColors.softTeal.withOpacity(0.2),
-                            backgroundImage: _selectedAvatarUrl != null
-                                ? CachedNetworkImageProvider(_selectedAvatarUrl!)
-                                : null,
-                            child: _selectedAvatarUrl == null
-                                ? const Icon(Icons.person, size: 50, color: AppColors.deepTeal)
-                                : null,
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
+              // Avatar Section Card
+              _EditSectionCard(
+                accentColor: AppColors.warmCoral,
+                icon: Icons.face_outlined,
+                title: 'Profile Photo',
+                subtitle: 'Choose an avatar to represent you',
+                child: Center(
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: _openAvatarPicker,
+                        child: Stack(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(3),
                               decoration: BoxDecoration(
-                                color: AppColors.deepTeal,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
+                                gradient: LinearGradient(
+                                  colors: [AppColors.warmCoral, AppColors.goldenAmber],
+                                ),
                               ),
-                              child: const Icon(
-                                Icons.edit,
-                                color: Colors.white,
-                                size: 16,
+                              child: CircleAvatar(
+                                radius: 50,
+                                backgroundColor: Theme.of(context).cardColor,
+                                backgroundImage: _selectedAvatarUrl != null
+                                    ? CachedNetworkImageProvider(_selectedAvatarUrl!)
+                                    : null,
+                                child: _selectedAvatarUrl == null
+                                    ? Icon(Icons.person, size: 50, color: AppColors.deepTeal)
+                                    : null,
                               ),
                             ),
-                          ),
-                        ],
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.warmCoral,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Theme.of(context).cardColor, width: 3),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.warmCoral.withOpacity(0.3),
+                                      blurRadius: 8,
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(height: AppTheme.spacingMD),
+                      TextButton.icon(
+                        onPressed: _openAvatarPicker,
+                        icon: const Icon(Icons.face, size: 18),
+                        label: const Text('Change Avatar'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.warmCoral,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: AppTheme.spacingLG),
+
+              // Basic Info Section Card
+              _EditSectionCard(
+                accentColor: AppColors.deepTeal,
+                icon: Icons.person_outline,
+                title: 'Basic Information',
+                subtitle: 'Your personal details',
+                child: Column(
+                  children: [
+                    // Full Name
+                    _StyledFormField(
+                      controller: _fullNameController,
+                      label: AppStrings.fullName,
+                      hint: 'Enter your full name',
+                      icon: Icons.badge_outlined,
+                      color: AppColors.deepTeal,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your full name';
+                        }
+                        return null;
+                      },
                     ),
-                    const SizedBox(height: AppTheme.spacingSM),
-                    TextButton.icon(
-                      onPressed: _openAvatarPicker,
-                      icon: const Icon(Icons.face, size: 18),
-                      label: const Text('Change Avatar'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.deepTeal,
-                      ),
+                    const SizedBox(height: AppTheme.spacingMD),
+
+                    // City of Residence
+                    _StyledFormField(
+                      controller: _cityController,
+                      label: AppStrings.cityOfResidence,
+                      hint: 'Where do you live?',
+                      icon: Icons.location_on_outlined,
+                      color: AppColors.ethiopianGreen,
+                    ),
+                    const SizedBox(height: AppTheme.spacingMD),
+
+                    // Gender and Date of Birth row
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Gender selector
+                        Expanded(
+                          child: _GenderSelector(
+                            selectedGender: _selectedGender,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedGender = value;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: AppTheme.spacingMD),
+                        // Date of Birth picker
+                        Expanded(
+                          child: _DateOfBirthPicker(
+                            selectedDate: _selectedDateOfBirth,
+                            onTap: _selectDateOfBirth,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
+
               const SizedBox(height: AppTheme.spacingLG),
-              
-              // Full Name
-              TextFormField(
-                controller: _fullNameController,
-                decoration: const InputDecoration(
-                  labelText: AppStrings.fullName,
-                  prefixIcon: Icon(Icons.person_outline),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter your full name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: AppTheme.spacingMD),
 
-              // City of Residence
-              TextFormField(
-                controller: _cityController,
-                decoration: const InputDecoration(
-                  labelText: AppStrings.cityOfResidence,
-                  prefixIcon: Icon(Icons.location_on_outlined),
-                ),
-              ),
-              const SizedBox(height: AppTheme.spacingMD),
-
-              // Gender and Date of Birth row
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Gender dropdown
-                  Expanded(
-                    child: DropdownButtonFormField<Gender>(
-                      value: _selectedGender,
-                      decoration: const InputDecoration(
-                        labelText: AppStrings.gender,
-                        prefixIcon: Icon(Icons.person_outline),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                      ),
-                      items: [
-                        DropdownMenuItem(
-                          value: Gender.male,
-                          child: Row(
-                            children: const [
-                              Icon(Icons.male, size: 20, color: AppColors.deepTeal),
-                              SizedBox(width: 8),
-                              Text(AppStrings.male),
-                            ],
-                          ),
-                        ),
-                        DropdownMenuItem(
-                          value: Gender.female,
-                          child: Row(
-                            children: const [
-                              Icon(Icons.female, size: 20, color: AppColors.warmCoral),
-                              SizedBox(width: 8),
-                              Text(AppStrings.female),
-                            ],
-                          ),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedGender = value;
-                        });
-                      },
+              // About You Section Card
+              _EditSectionCard(
+                accentColor: AppColors.goldenAmber,
+                icon: Icons.info_outline,
+                title: 'About You',
+                subtitle: 'Tell others about yourself',
+                child: Column(
+                  children: [
+                    // Bio
+                    _StyledFormField(
+                      controller: _bioController,
+                      label: AppStrings.bio,
+                      hint: 'Write a short bio about yourself...',
+                      icon: Icons.edit_note_outlined,
+                      color: AppColors.goldenAmber,
+                      maxLines: 3,
+                      maxLength: 500,
                     ),
-                  ),
-                  const SizedBox(width: AppTheme.spacingMD),
-                  // Date of Birth picker
-                  Expanded(
-                    child: InkWell(
-                      onTap: _selectDateOfBirth,
-                      borderRadius: BorderRadius.circular(8),
-                      child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: AppStrings.dateOfBirth,
-                          prefixIcon: Icon(Icons.cake_outlined),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                _selectedDateOfBirth != null
-                                    ? DateFormat('MMM d, y').format(_selectedDateOfBirth!)
-                                    : 'Select',
-                                style: TextStyle(
-                                  color: _selectedDateOfBirth != null
-                                      ? Theme.of(context).textTheme.bodyLarge?.color
-                                      : AppColors.textSecondary,
-                                  fontSize: 14,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                    const SizedBox(height: AppTheme.spacingMD),
+
+                    // Travel Preferences
+                    _StyledFormField(
+                      controller: _travelPreferencesController,
+                      label: AppStrings.travelPreferences,
+                      hint: 'e.g., Adventure, Cultural, Budget-friendly',
+                      icon: Icons.flight_outlined,
+                      color: AppColors.softTeal,
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: AppTheme.spacingLG),
+
+              // Interests Section Card
+              _EditSectionCard(
+                accentColor: AppColors.softTeal,
+                icon: Icons.interests_outlined,
+                title: AppStrings.interests,
+                subtitle: AppStrings.interestsHint,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Interest chips
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _suggestedInterests.map((interest) {
+                        final isSelected = _interestsController.text.toLowerCase().contains(interest.toLowerCase());
+                        return ActionChip(
+                          label: Text(
+                            interest,
+                            style: TextStyle(
+                              color: isSelected 
+                                  ? Colors.white 
+                                  : (isDark ? AppColors.softTeal : AppColors.deepTeal),
                             ),
-                            if (_selectedDateOfBirth != null)
-                              Text(
-                                '${DateTime.now().year - _selectedDateOfBirth!.year}y',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.deepTeal,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                          ],
+                          ),
+                          onPressed: () {
+                            _addInterest(interest);
+                            setState(() {});
+                          },
+                          avatar: Icon(
+                            isSelected ? Icons.check : Icons.add,
+                            size: 18,
+                            color: isSelected 
+                                ? Colors.white 
+                                : (isDark ? AppColors.softTeal : AppColors.deepTeal),
+                          ),
+                          backgroundColor: isSelected 
+                              ? AppColors.deepTeal 
+                              : AppColors.softTeal.withOpacity(isDark ? 0.2 : 0.3),
+                          side: BorderSide(
+                            color: isSelected 
+                                ? AppColors.deepTeal 
+                                : AppColors.softTeal.withOpacity(0.5),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: AppTheme.spacingMD),
+
+                    // Interests text field
+                    _StyledFormField(
+                      controller: _interestsController,
+                      label: 'Your interests',
+                      hint: 'Tap chips above or type your own',
+                      icon: Icons.interests_outlined,
+                      color: AppColors.softTeal,
+                      maxLines: 3,
+                      maxLength: 1000,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: AppTheme.spacingXL),
+
+              // Save button
+              _SaveButton(
+                isLoading: _isLoading,
+                onPressed: _saveProfile,
+              ),
+
+              const SizedBox(height: AppTheme.spacingLG),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Edit section card with accent color
+class _EditSectionCard extends StatelessWidget {
+  final Color accentColor;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Widget child;
+
+  const _EditSectionCard({
+    required this.accentColor,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.1),
+        ),
+        boxShadow: isDark ? null : [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacingMD),
+            decoration: BoxDecoration(
+              color: accentColor.withOpacity(isDark ? 0.1 : 0.08),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: accentColor.withOpacity(isDark ? 0.2 : 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 20,
+                    color: isDark ? accentColor.withOpacity(0.9) : accentColor,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
+                      Text(
+                        subtitle,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(AppTheme.spacingMD),
+            child: child,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Styled form field
+class _StyledFormField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final IconData icon;
+  final Color color;
+  final int maxLines;
+  final int? maxLength;
+  final String? Function(String?)? validator;
+
+  const _StyledFormField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    required this.icon,
+    required this.color,
+    this.maxLines = 1,
+    this.maxLength,
+    this.validator,
+  });
+
+  // Get high-contrast icon color
+  Color _getIconColor(Color accentColor, bool isDark) {
+    if (isDark) return accentColor;
+    if (accentColor == AppColors.goldenAmber) return AppColors.goldenAmberDark;
+    if (accentColor == AppColors.softTeal) return AppColors.softTealDark;
+    if (accentColor == AppColors.warmCoral) return AppColors.warmCoralDark;
+    return accentColor;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconColor = _getIconColor(color, isDark);
+    
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      maxLength: maxLength,
+      style: TextStyle(color: isDark ? AppColors.darkTextPrimary : AppColors.charcoal),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: AppColors.textSecondary), // Use neutral gray for labels
+        hintText: hint,
+        hintStyle: TextStyle(color: AppColors.textSecondary.withOpacity(0.7)),
+        prefixIcon: Icon(icon, color: iconColor),
+        filled: true,
+        fillColor: color.withOpacity(isDark ? 0.08 : 0.05),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: color, width: 2),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.error, width: 2),
+        ),
+        alignLabelWithHint: maxLines > 1,
+      ),
+      validator: validator,
+    );
+  }
+}
+
+/// Gender selector
+class _GenderSelector extends StatelessWidget {
+  final Gender? selectedGender;
+  final ValueChanged<Gender?> onChanged;
+
+  const _GenderSelector({
+    required this.selectedGender,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppStrings.gender,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _GenderOption(
+                gender: Gender.male,
+                icon: Icons.male,
+                label: 'M',
+                color: AppColors.deepTeal,
+                isSelected: selectedGender == Gender.male,
+                onTap: () => onChanged(Gender.male),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _GenderOption(
+                gender: Gender.female,
+                icon: Icons.female,
+                label: 'F',
+                color: AppColors.warmCoral,
+                isSelected: selectedGender == Gender.female,
+                onTap: () => onChanged(Gender.female),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Gender option button
+class _GenderOption extends StatelessWidget {
+  final Gender gender;
+  final IconData icon;
+  final String label;
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _GenderOption({
+    required this.gender,
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  // Get high-contrast color for text/icons
+  Color _getDisplayColor(Color accentColor, bool isDark) {
+    if (isDark) return accentColor;
+    if (accentColor == AppColors.goldenAmber) return AppColors.goldenAmberDark;
+    if (accentColor == AppColors.softTeal) return AppColors.softTealDark;
+    if (accentColor == AppColors.warmCoral) return AppColors.warmCoralDark;
+    return accentColor;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final displayColor = _getDisplayColor(color, isDark);
+    
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected 
+                ? color.withOpacity(isDark ? 0.2 : 0.15) 
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? color : AppColors.textSecondary.withOpacity(0.3),
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon, 
+                size: 24, 
+                color: isSelected ? displayColor : AppColors.textSecondary,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: isSelected ? AppColors.charcoal : AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Date of birth picker
+class _DateOfBirthPicker extends StatelessWidget {
+  final DateTime? selectedDate;
+  final VoidCallback onTap;
+
+  const _DateOfBirthPicker({
+    required this.selectedDate,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hasDate = selectedDate != null;
+    final iconColor = isDark ? AppColors.goldenAmber : AppColors.goldenAmberDark;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppStrings.dateOfBirth,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              decoration: BoxDecoration(
+                color: hasDate 
+                    ? AppColors.goldenAmber.withOpacity(isDark ? 0.15 : 0.1)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: hasDate 
+                      ? AppColors.goldenAmber 
+                      : AppColors.textSecondary.withOpacity(0.3),
+                  width: hasDate ? 2 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.cake_outlined,
+                    size: 20,
+                    color: hasDate ? iconColor : AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          hasDate 
+                              ? DateFormat('MMM d').format(selectedDate!) 
+                              : 'Select',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: hasDate ? FontWeight.w600 : FontWeight.normal,
+                            color: hasDate ? AppColors.charcoal : AppColors.textSecondary,
+                          ),
+                        ),
+                        if (hasDate)
+                          Text(
+                            '${DateTime.now().year - selectedDate!.year}y old',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: isDark ? AppColors.goldenAmber : AppColors.goldenAmberDark,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppTheme.spacingMD),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
-              // Bio
-              TextFormField(
-                controller: _bioController,
-                decoration: const InputDecoration(
-                  labelText: AppStrings.bio,
-                  prefixIcon: Icon(Icons.info_outline),
-                  alignLabelWithHint: true,
-                ),
-                maxLines: 3,
-                maxLength: 500,
-              ),
-              const SizedBox(height: AppTheme.spacingMD),
+/// Save button with gradient
+class _SaveButton extends StatelessWidget {
+  final bool isLoading;
+  final VoidCallback onPressed;
 
-              // Travel Preferences
-              TextFormField(
-                controller: _travelPreferencesController,
-                decoration: const InputDecoration(
-                  labelText: AppStrings.travelPreferences,
-                  prefixIcon: Icon(Icons.flight_outlined),
-                  hintText: 'e.g., Adventure, Cultural, Budget-friendly',
-                ),
-                maxLines: 2,
-              ),
-              const SizedBox(height: AppTheme.spacingLG),
+  const _SaveButton({
+    required this.isLoading,
+    required this.onPressed,
+  });
 
-              // Interests Section
-              Text(
-                AppStrings.interests,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.deepTeal, AppColors.deepTeal.withBlue(100)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.deepTeal.withOpacity(0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isLoading ? null : onPressed,
+          borderRadius: BorderRadius.circular(16),
+          child: Center(
+            child: isLoading
+                ? const SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
-              ),
-              const SizedBox(height: AppTheme.spacingSM),
-              Text(
-                AppStrings.interestsHint,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-              ),
-              const SizedBox(height: AppTheme.spacingSM),
-
-              // Interest chips
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _suggestedInterests.map((interest) {
-                  return ActionChip(
-                    label: Text(interest),
-                    onPressed: () => _addInterest(interest),
-                    avatar: const Icon(Icons.add, size: 18),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: AppTheme.spacingMD),
-
-              // Interests text field
-              TextFormField(
-                controller: _interestsController,
-                decoration: const InputDecoration(
-                  labelText: 'Your interests',
-                  prefixIcon: Icon(Icons.interests_outlined),
-                  hintText: 'Tap chips above or type your own',
-                  alignLabelWithHint: true,
-                ),
-                maxLines: 3,
-                maxLength: 1000,
-              ),
-              const SizedBox(height: AppTheme.spacingXL),
-
-              // Save button (alternative to app bar)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _saveProfile,
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text(AppStrings.save),
-                ),
-              ),
-            ],
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.check_circle_outline,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppStrings.save,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
