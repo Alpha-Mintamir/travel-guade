@@ -29,35 +29,35 @@ class TripCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Trip Photo with Hero animation
+            // Trip Photo with Hero animation - Instagram-style tall aspect ratio
             Hero(
               tag: 'trip-image-${trip.id}',
               child: Stack(
                 children: [
-                  imageUrl.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          height: 160,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) => Shimmer.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(height: 160, color: Colors.white),
-                          ),
-                          errorWidget: (_, __, ___) => Container(
-                            height: 160,
+                  AspectRatio(
+                    aspectRatio: 4 / 5, // Instagram-style portrait aspect ratio
+                    child: imageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(color: Colors.white),
+                            ),
+                            errorWidget: (_, __, ___) => Container(
+                              color: AppColors.softTeal,
+                              child: const Icon(Icons.image_not_supported, size: 48),
+                            ),
+                          )
+                        : Container(
                             color: AppColors.softTeal,
-                            child: const Icon(Icons.image_not_supported, size: 48),
+                            child: const Center(
+                              child: Icon(Icons.photo, size: 48, color: Colors.white54),
+                            ),
                           ),
-                        )
-                      : Container(
-                          height: 160,
-                          color: AppColors.softTeal,
-                          child: const Center(
-                            child: Icon(Icons.photo, size: 48, color: Colors.white54),
-                          ),
-                        ),
+                  ),
                   // Instagram badge
                   Positioned(
                     top: 8,
