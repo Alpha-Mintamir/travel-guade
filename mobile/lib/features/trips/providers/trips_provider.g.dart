@@ -158,7 +158,7 @@ class _TripByIdProviderElement extends AutoDisposeFutureProviderElement<Trip>
   String get tripId => (origin as TripByIdProvider).tripId;
 }
 
-String _$tripsNotifierHash() => r'd1b1b8f18b89b04650ce8344cab28801bba92a11';
+String _$tripsNotifierHash() => r'3d4cbd8b62203eaf0a30804b72e4f4542dacdd33';
 
 /// See also [TripsNotifier].
 @ProviderFor(TripsNotifier)

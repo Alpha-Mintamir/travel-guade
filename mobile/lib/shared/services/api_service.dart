@@ -166,6 +166,7 @@ class ApiService {
     String? phoneNumber,
     String? telegramUsername,
     String? photoUrl,
+    String? userPhotoUrl,
   }) async {
     final response = await _dio.post(
       ApiConstants.trips,
@@ -182,6 +183,7 @@ class ApiService {
         if (phoneNumber != null) 'phoneNumber': phoneNumber,
         if (telegramUsername != null) 'telegramUsername': telegramUsername,
         if (photoUrl != null) 'photoUrl': photoUrl,
+        if (userPhotoUrl != null) 'userPhotoUrl': userPhotoUrl,
       },
     );
     return Trip.fromJson(response.data['data']);
@@ -219,6 +221,7 @@ class ApiService {
     String? phoneNumber,
     String? telegramUsername,
     String? photoUrl,
+    String? userPhotoUrl,
   }) async {
     final response = await _dio.patch(
       '${ApiConstants.trips}/$id',
@@ -235,6 +238,7 @@ class ApiService {
         if (phoneNumber != null) 'phoneNumber': phoneNumber,
         if (telegramUsername != null) 'telegramUsername': telegramUsername,
         if (photoUrl != null) 'photoUrl': photoUrl,
+        if (userPhotoUrl != null) 'userPhotoUrl': userPhotoUrl,
       },
     );
     return Trip.fromJson(response.data['data']);

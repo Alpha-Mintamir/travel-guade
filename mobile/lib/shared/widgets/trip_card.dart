@@ -6,7 +6,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/extensions.dart';
 import '../models/trip.dart';
 
-class TripCard extends StatelessWidget {
+class TripCard extends StatefulWidget {
   final Trip trip;
   final VoidCallback onTap;
 
@@ -17,40 +17,59 @@ class TripCard extends StatelessWidget {
   });
 
   @override
+  State<TripCard> createState() => _TripCardState();
+}
+
+class _TripCardState extends State<TripCard> {
+  int _currentPage = 0;
+
+  // Get list of available photo URLs
+  List<String> get _photoUrls {
+    final urls = <String>[];
+    if (widget.trip.photoUrl != null && widget.trip.photoUrl!.isNotEmpty) {
+      urls.add(widget.trip.photoUrl!);
+    }
+    if (widget.trip.userPhotoUrl != null && widget.trip.userPhotoUrl!.isNotEmpty) {
+      urls.add(widget.trip.userPhotoUrl!);
+    }
+    return urls;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final imageUrl = trip.photoUrl ?? '';
+    final photoUrls = _photoUrls;
+    final hasMultiplePhotos = photoUrls.length > 1;
     
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.only(bottom: AppTheme.spacingMD),
       child: InkWell(
-        onTap: onTap,
+        onTap: widget.onTap,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Trip Photo with Hero animation - Instagram-style tall aspect ratio
+            // Trip Photo Carousel with Hero animation - Instagram-style
             Hero(
-              tag: 'trip-image-${trip.id}',
+              tag: 'trip-image-${widget.trip.id}',
               child: Stack(
                 children: [
                   AspectRatio(
                     aspectRatio: 4 / 5, // Instagram-style portrait aspect ratio
-                    child: imageUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: imageUrl,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => Shimmer.fromColors(
-                              baseColor: Colors.grey[300]!,
-                              highlightColor: Colors.grey[100]!,
-                              child: Container(color: Colors.white),
-                            ),
-                            errorWidget: (_, __, ___) => Container(
-                              color: AppColors.softTeal,
-                              child: const Icon(Icons.image_not_supported, size: 48),
-                            ),
-                          )
+                    child: photoUrls.isNotEmpty
+                        ? hasMultiplePhotos
+                            ? PageView.builder(
+                                itemCount: photoUrls.length,
+                                onPageChanged: (index) {
+                                  setState(() {
+                                    _currentPage = index;
+                                  });
+                                },
+                                itemBuilder: (context, index) {
+                                  return _buildImage(photoUrls[index]);
+                                },
+                              )
+                            : _buildImage(photoUrls.first)
                         : Container(
                             color: AppColors.softTeal,
                             child: const Center(
@@ -58,10 +77,64 @@ class TripCard extends StatelessWidget {
                             ),
                           ),
                   ),
-                  // Instagram badge
+                  // Page indicator dots (only show if multiple photos)
+                  if (hasMultiplePhotos)
+                    Positioned(
+                      bottom: 12,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          photoUrls.length,
+                          (index) => AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            width: _currentPage == index ? 8 : 6,
+                            height: _currentPage == index ? 8 : 6,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _currentPage == index
+                                  ? Colors.white
+                                  : Colors.white.withOpacity(0.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  // Photo count indicator (top right, like Instagram)
+                  if (hasMultiplePhotos)
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${_currentPage + 1}/${photoUrls.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  // Instagram badge (bottom right on single photo, or top left on multiple)
                   Positioned(
-                    top: 8,
-                    right: 8,
+                    top: hasMultiplePhotos ? null : 8,
+                    bottom: hasMultiplePhotos ? 40 : null,
+                    right: hasMultiplePhotos ? null : 8,
+                    left: hasMultiplePhotos ? 12 : null,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
@@ -78,7 +151,7 @@ class TripCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            trip.instagramUsername,
+                            widget.trip.instagramUsername,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 11,
@@ -108,7 +181,7 @@ class TripCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          trip.destinationName,
+                          widget.trip.destinationName,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -123,7 +196,7 @@ class TripCard extends StatelessWidget {
                       const Icon(Icons.calendar_today, size: 14, color: AppColors.textSecondary),
                       const SizedBox(width: 4),
                       Text(
-                        trip.formattedDateRange,
+                        widget.trip.formattedDateRange,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -136,17 +209,17 @@ class TripCard extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 12,
-                        backgroundImage: trip.creator.profilePhotoUrl != null
-                            ? CachedNetworkImageProvider(trip.creator.profilePhotoUrl!)
+                        backgroundImage: widget.trip.creator.profilePhotoUrl != null
+                            ? CachedNetworkImageProvider(widget.trip.creator.profilePhotoUrl!)
                             : null,
-                        child: trip.creator.profilePhotoUrl == null
-                            ? Text(trip.creator.fullName.initials)
+                        child: widget.trip.creator.profilePhotoUrl == null
+                            ? Text(widget.trip.creator.fullName.initials)
                             : null,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          trip.creator.fullName,
+                          widget.trip.creator.fullName,
                           style: theme.textTheme.bodySmall,
                         ),
                       ),
@@ -159,7 +232,7 @@ class TripCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          '${trip.peopleNeeded} needed',
+                          '${widget.trip.peopleNeeded} needed',
                           style: const TextStyle(
                             color: AppColors.deepTeal,
                             fontSize: 12,
@@ -174,6 +247,24 @@ class TripCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildImage(String imageUrl) {
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      width: double.infinity,
+      height: double.infinity,
+      fit: BoxFit.cover,
+      placeholder: (_, __) => Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Container(color: Colors.white),
+      ),
+      errorWidget: (_, __, ___) => Container(
+        color: AppColors.softTeal,
+        child: const Icon(Icons.image_not_supported, size: 48),
       ),
     );
   }

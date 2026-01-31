@@ -110,6 +110,7 @@ class TripsNotifier extends _$TripsNotifier {
     String? phoneNumber,
     String? telegramUsername,
     String? photoUrl,
+    String? userPhotoUrl,
   }) async {
     final currentState = state.valueOrNull;
     
@@ -127,6 +128,7 @@ class TripsNotifier extends _$TripsNotifier {
       phoneNumber: phoneNumber,
       telegramUsername: telegramUsername,
       photoUrl: photoUrl,
+      userPhotoUrl: userPhotoUrl,
     );
     
     // Optimistically add to the front of the list (instant feedback)
@@ -177,6 +179,7 @@ class TripsNotifier extends _$TripsNotifier {
     String? phoneNumber,
     String? telegramUsername,
     String? photoUrl,
+    String? userPhotoUrl,
   }) async {
     final currentState = state.valueOrNull;
 
@@ -195,6 +198,7 @@ class TripsNotifier extends _$TripsNotifier {
       phoneNumber: phoneNumber,
       telegramUsername: telegramUsername,
       photoUrl: photoUrl,
+      userPhotoUrl: userPhotoUrl,
     );
 
     // Update the trip in the list

@@ -16,7 +16,9 @@ interface CreateTripData {
   instagramUsername: string;
   phoneNumber?: string;
   telegramUsername?: string;
-  photoUrl?: string;
+  // Photos
+  photoUrl?: string;       // Destination photo
+  userPhotoUrl?: string;   // Creator's photo for the trip
 }
 
 interface GetTripsFilters {
@@ -69,6 +71,7 @@ export class TripService {
         phoneNumber: data.phoneNumber,
         telegramUsername: data.telegramUsername,
         photoUrl: data.photoUrl,
+        userPhotoUrl: data.userPhotoUrl,
         userId,
       },
       include: {
@@ -281,6 +284,7 @@ export class TripService {
         ...(data.phoneNumber && { phoneNumber: data.phoneNumber }),
         ...(data.telegramUsername && { telegramUsername: data.telegramUsername }),
         ...(data.photoUrl && { photoUrl: data.photoUrl }),
+        ...(data.userPhotoUrl && { userPhotoUrl: data.userPhotoUrl }),
       },
       include: {
         creator: {

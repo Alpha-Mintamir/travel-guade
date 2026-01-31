@@ -20,8 +20,9 @@ class Trip with _$Trip {
     required String travelStyle,
     required String status,
     required DateTime createdAt,
-    // Trip photo and contact info
-    String? photoUrl,
+    // Trip photos and contact info
+    String? photoUrl,         // Destination photo
+    String? userPhotoUrl,     // Creator's photo for the trip
     required String instagramUsername,
     String? phoneNumber,
     String? telegramUsername,

@@ -222,7 +222,7 @@ final conversationsNotifierProvider =
     );
 
 typedef _$ConversationsNotifier = AutoDisposeAsyncNotifier<List<Conversation>>;
-String _$messagesNotifierHash() => r'538f3035d1e8be184e528b72f0d5bfec5f13471b';
+String _$messagesNotifierHash() => r'a605a1c9c3c9983202f3d9f87ff7912d5601d9a3';
 
 abstract class _$MessagesNotifier
     extends BuildlessAutoDisposeAsyncNotifier<ChatState> {

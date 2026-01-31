@@ -29,10 +29,15 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
   String _travelStyle = 'ADVENTURE';
   bool _isLoading = false;
   
-  // Photo
-  XFile? _selectedImage;
-  String? _uploadedPhotoUrl;
-  bool _isUploadingPhoto = false;
+  // Destination Photo
+  XFile? _selectedDestinationImage;
+  String? _uploadedDestinationPhotoUrl;
+  bool _isUploadingDestinationPhoto = false;
+  
+  // User Photo (optional)
+  XFile? _selectedUserImage;
+  String? _uploadedUserPhotoUrl;
+  bool _isUploadingUserPhoto = false;
 
   final List<String> _budgetLevels = ['BUDGET', 'MEDIUM', 'LUXURY'];
   final List<String> _travelStyles = ['ADVENTURE', 'CULTURAL', 'RELAXATION', 'PHOTOGRAPHY', 'FOOD', 'NATURE'];
@@ -84,7 +89,7 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _pickDestinationImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
       source: ImageSource.gallery,
@@ -95,36 +100,35 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
     
     if (image != null) {
       setState(() {
-        _selectedImage = image;
-        _uploadedPhotoUrl = null;
+        _selectedDestinationImage = image;
+        _uploadedDestinationPhotoUrl = null;
       });
       
       // Upload immediately
-      await _uploadPhoto();
+      await _uploadDestinationPhoto();
     }
   }
 
-  Future<void> _uploadPhoto() async {
-    if (_selectedImage == null) return;
+  Future<void> _uploadDestinationPhoto() async {
+    if (_selectedDestinationImage == null) return;
     
-    setState(() => _isUploadingPhoto = true);
+    setState(() => _isUploadingDestinationPhoto = true);
     
     try {
-      // Read image bytes (works on both mobile and web)
-      final bytes = await _selectedImage!.readAsBytes();
-      final filename = _selectedImage!.name;
+      final bytes = await _selectedDestinationImage!.readAsBytes();
+      final filename = _selectedDestinationImage!.name;
       
       final photoUrl = await ref.read(apiServiceProvider).uploadTripPhoto(
         bytes,
         filename,
       );
       setState(() {
-        _uploadedPhotoUrl = photoUrl;
+        _uploadedDestinationPhotoUrl = photoUrl;
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Photo uploaded successfully!'),
+            content: Text('Destination photo uploaded!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -140,7 +144,67 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
       }
     } finally {
       if (mounted) {
-        setState(() => _isUploadingPhoto = false);
+        setState(() => _isUploadingDestinationPhoto = false);
+      }
+    }
+  }
+
+  Future<void> _pickUserImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1200,
+      maxHeight: 1200,
+      imageQuality: 85,
+    );
+    
+    if (image != null) {
+      setState(() {
+        _selectedUserImage = image;
+        _uploadedUserPhotoUrl = null;
+      });
+      
+      // Upload immediately
+      await _uploadUserPhoto();
+    }
+  }
+
+  Future<void> _uploadUserPhoto() async {
+    if (_selectedUserImage == null) return;
+    
+    setState(() => _isUploadingUserPhoto = true);
+    
+    try {
+      final bytes = await _selectedUserImage!.readAsBytes();
+      final filename = _selectedUserImage!.name;
+      
+      final photoUrl = await ref.read(apiServiceProvider).uploadTripPhoto(
+        bytes,
+        filename,
+      );
+      setState(() {
+        _uploadedUserPhotoUrl = photoUrl;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Your photo uploaded!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to upload photo: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingUserPhoto = false);
       }
     }
   }
@@ -173,9 +237,9 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
 
   Future<void> _createTrip() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedImage == null || _uploadedPhotoUrl == null) {
+    if (_selectedDestinationImage == null || _uploadedDestinationPhotoUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload a photo for your trip')),
+        const SnackBar(content: Text('Please upload a destination photo for your trip')),
       );
       return;
     }
@@ -202,7 +266,8 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
             telegramUsername: _telegramController.text.isEmpty 
                 ? null 
                 : _telegramController.text.trim(),
-            photoUrl: _uploadedPhotoUrl,
+            photoUrl: _uploadedDestinationPhotoUrl,
+            userPhotoUrl: _uploadedUserPhotoUrl,
           );
       
       // Also update my trips list optimistically
@@ -272,54 +337,216 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
           ),
           padding: const EdgeInsets.all(AppTheme.spacingMD),
           children: [
-            // Trip Photo (Required)
-            Text(
-              'Trip Photo *',
-              style: Theme.of(context).textTheme.titleMedium,
+            // Photo Section Header
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacingMD),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.photo_library_outlined,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: AppTheme.spacingSM),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Trip Photos',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Add photos to show in a swipeable carousel like Instagram',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: AppTheme.spacingMD),
+
+            // 1. Destination Photo (Required)
+            Row(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Text('1', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spacingSM),
+                Text(
+                  'Destination Photo *',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
             ),
             const SizedBox(height: AppTheme.spacingXS),
             Text(
-              'Add a photo that represents your trip',
+              'Show where you\'re going - this will be the first photo people see',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
             const SizedBox(height: AppTheme.spacingSM),
             GestureDetector(
-              onTap: _isUploadingPhoto ? null : _pickImage,
+              onTap: _isUploadingDestinationPhoto ? null : _pickDestinationImage,
               child: Container(
                 height: 200,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceVariant,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.outline,
+                    color: _uploadedDestinationPhotoUrl != null 
+                        ? Colors.green 
+                        : Theme.of(context).colorScheme.outline,
                     width: 2,
                     style: BorderStyle.solid,
                   ),
-                  image: _uploadedPhotoUrl != null
+                  image: _uploadedDestinationPhotoUrl != null
                       ? DecorationImage(
-                          image: NetworkImage(_uploadedPhotoUrl!),
+                          image: NetworkImage(_uploadedDestinationPhotoUrl!),
                           fit: BoxFit.cover,
                         )
                       : null,
                 ),
-                child: _isUploadingPhoto
+                child: _isUploadingDestinationPhoto
                     ? const Center(child: CircularProgressIndicator())
-                    : _uploadedPhotoUrl == null
+                    : _uploadedDestinationPhotoUrl == null
                         ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.add_photo_alternate_outlined,
+                                Icons.landscape_outlined,
                                 size: 48,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
                               const SizedBox(height: AppTheme.spacingSM),
                               Text(
-                                'Tap to add photo',
+                                'Tap to add destination photo',
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'e.g., Lalibela churches, Simien views...',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Align(
+                            alignment: Alignment.topRight,
+                            child: Container(
+                              margin: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+              ),
+            ),
+
+            const SizedBox(height: AppTheme.spacingLG),
+
+            // 2. User Photo (Optional)
+            Row(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Text('2', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spacingSM),
+                Text(
+                  'Your Photo (Optional)',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: AppTheme.spacingXS),
+            Text(
+              'Show yourself so travel buddies know who they\'ll be traveling with',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacingSM),
+            GestureDetector(
+              onTap: _isUploadingUserPhoto ? null : _pickUserImage,
+              child: Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceVariant,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _uploadedUserPhotoUrl != null 
+                        ? Colors.green 
+                        : Theme.of(context).colorScheme.outline,
+                    width: 2,
+                    style: BorderStyle.solid,
+                  ),
+                  image: _uploadedUserPhotoUrl != null
+                      ? DecorationImage(
+                          image: NetworkImage(_uploadedUserPhotoUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+                child: _isUploadingUserPhoto
+                    ? const Center(child: CircularProgressIndicator())
+                    : _uploadedUserPhotoUrl == null
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.person_outline,
+                                size: 48,
+                                color: Theme.of(context).colorScheme.secondary,
+                              ),
+                              const SizedBox(height: AppTheme.spacingSM),
+                              Text(
+                                'Tap to add your photo',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Theme.of(context).colorScheme.secondary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Builds trust with potential travel buddies',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                 ),
                               ),
                             ],

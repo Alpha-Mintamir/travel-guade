@@ -176,8 +176,9 @@ model Trip {
   travelStyle   TravelStyle @map("travel_style")
   status        TripStatus  @default(ACTIVE)
   
-  // Trip photo and contact info
-  photoUrl          String?   @map("photo_url")
+  // Trip photos and contact info
+  photoUrl          String?   @map("photo_url")        // Destination photo
+  userPhotoUrl      String?   @map("user_photo_url")   // Creator's photo for the trip
   instagramUsername String    @map("instagram_username")
   phoneNumber       String?   @map("phone_number")
   telegramUsername  String?   @map("telegram_username")

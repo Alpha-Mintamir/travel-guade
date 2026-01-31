@@ -35,8 +35,11 @@ mixin _$Trip {
   String get travelStyle => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
   DateTime get createdAt =>
-      throw _privateConstructorUsedError; // Trip photo and contact info
-  String? get photoUrl => throw _privateConstructorUsedError;
+      throw _privateConstructorUsedError; // Trip photos and contact info
+  String? get photoUrl =>
+      throw _privateConstructorUsedError; // Destination photo
+  String? get userPhotoUrl =>
+      throw _privateConstructorUsedError; // Creator's photo for the trip
   String get instagramUsername => throw _privateConstructorUsedError;
   String? get phoneNumber => throw _privateConstructorUsedError;
   String? get telegramUsername => throw _privateConstructorUsedError;
@@ -70,6 +73,7 @@ abstract class $TripCopyWith<$Res> {
     String status,
     DateTime createdAt,
     String? photoUrl,
+    String? userPhotoUrl,
     String instagramUsername,
     String? phoneNumber,
     String? telegramUsername,
@@ -107,6 +111,7 @@ class _$TripCopyWithImpl<$Res, $Val extends Trip>
     Object? status = null,
     Object? createdAt = null,
     Object? photoUrl = freezed,
+    Object? userPhotoUrl = freezed,
     Object? instagramUsername = null,
     Object? phoneNumber = freezed,
     Object? telegramUsername = freezed,
@@ -169,6 +174,10 @@ class _$TripCopyWithImpl<$Res, $Val extends Trip>
                 ? _value.photoUrl
                 : photoUrl // ignore: cast_nullable_to_non_nullable
                       as String?,
+            userPhotoUrl: freezed == userPhotoUrl
+                ? _value.userPhotoUrl
+                : userPhotoUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
             instagramUsername: null == instagramUsername
                 ? _value.instagramUsername
                 : instagramUsername // ignore: cast_nullable_to_non_nullable
@@ -220,6 +229,7 @@ abstract class _$$TripImplCopyWith<$Res> implements $TripCopyWith<$Res> {
     String status,
     DateTime createdAt,
     String? photoUrl,
+    String? userPhotoUrl,
     String instagramUsername,
     String? phoneNumber,
     String? telegramUsername,
@@ -255,6 +265,7 @@ class __$$TripImplCopyWithImpl<$Res>
     Object? status = null,
     Object? createdAt = null,
     Object? photoUrl = freezed,
+    Object? userPhotoUrl = freezed,
     Object? instagramUsername = null,
     Object? phoneNumber = freezed,
     Object? telegramUsername = freezed,
@@ -317,6 +328,10 @@ class __$$TripImplCopyWithImpl<$Res>
             ? _value.photoUrl
             : photoUrl // ignore: cast_nullable_to_non_nullable
                   as String?,
+        userPhotoUrl: freezed == userPhotoUrl
+            ? _value.userPhotoUrl
+            : userPhotoUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
         instagramUsername: null == instagramUsername
             ? _value.instagramUsername
             : instagramUsername // ignore: cast_nullable_to_non_nullable
@@ -352,6 +367,7 @@ class _$TripImpl implements _Trip {
     required this.status,
     required this.createdAt,
     this.photoUrl,
+    this.userPhotoUrl,
     required this.instagramUsername,
     this.phoneNumber,
     this.telegramUsername,
@@ -389,9 +405,13 @@ class _$TripImpl implements _Trip {
   final String status;
   @override
   final DateTime createdAt;
-  // Trip photo and contact info
+  // Trip photos and contact info
   @override
   final String? photoUrl;
+  // Destination photo
+  @override
+  final String? userPhotoUrl;
+  // Creator's photo for the trip
   @override
   final String instagramUsername;
   @override
@@ -401,7 +421,7 @@ class _$TripImpl implements _Trip {
 
   @override
   String toString() {
-    return 'Trip(id: $id, userId: $userId, creator: $creator, destinationName: $destinationName, startDate: $startDate, endDate: $endDate, flexibleDates: $flexibleDates, description: $description, peopleNeeded: $peopleNeeded, budgetLevel: $budgetLevel, travelStyle: $travelStyle, status: $status, createdAt: $createdAt, photoUrl: $photoUrl, instagramUsername: $instagramUsername, phoneNumber: $phoneNumber, telegramUsername: $telegramUsername)';
+    return 'Trip(id: $id, userId: $userId, creator: $creator, destinationName: $destinationName, startDate: $startDate, endDate: $endDate, flexibleDates: $flexibleDates, description: $description, peopleNeeded: $peopleNeeded, budgetLevel: $budgetLevel, travelStyle: $travelStyle, status: $status, createdAt: $createdAt, photoUrl: $photoUrl, userPhotoUrl: $userPhotoUrl, instagramUsername: $instagramUsername, phoneNumber: $phoneNumber, telegramUsername: $telegramUsername)';
   }
 
   @override
@@ -432,6 +452,8 @@ class _$TripImpl implements _Trip {
                 other.createdAt == createdAt) &&
             (identical(other.photoUrl, photoUrl) ||
                 other.photoUrl == photoUrl) &&
+            (identical(other.userPhotoUrl, userPhotoUrl) ||
+                other.userPhotoUrl == userPhotoUrl) &&
             (identical(other.instagramUsername, instagramUsername) ||
                 other.instagramUsername == instagramUsername) &&
             (identical(other.phoneNumber, phoneNumber) ||
@@ -458,6 +480,7 @@ class _$TripImpl implements _Trip {
     status,
     createdAt,
     photoUrl,
+    userPhotoUrl,
     instagramUsername,
     phoneNumber,
     telegramUsername,
@@ -493,6 +516,7 @@ abstract class _Trip implements Trip {
     required final String status,
     required final DateTime createdAt,
     final String? photoUrl,
+    final String? userPhotoUrl,
     required final String instagramUsername,
     final String? phoneNumber,
     final String? telegramUsername,
@@ -525,9 +549,11 @@ abstract class _Trip implements Trip {
   @override
   String get status;
   @override
-  DateTime get createdAt; // Trip photo and contact info
+  DateTime get createdAt; // Trip photos and contact info
   @override
-  String? get photoUrl;
+  String? get photoUrl; // Destination photo
+  @override
+  String? get userPhotoUrl; // Creator's photo for the trip
   @override
   String get instagramUsername;
   @override
