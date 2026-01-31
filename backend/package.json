@@ -1,7 +1,7 @@
 {
   "name": "travelbro-backend",
   "version": "1.0.0",
-  "description": "TravelBro Ethiopian Travel Partner Backend API",
+  "description": "Travel Buddy Ethiopian Travel Partner Backend API",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",

@@ -5,6 +5,7 @@ import '../../providers/trips_provider.dart';
 import '../../../../../core/constants/strings.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../shared/widgets/trip_card.dart';
+import '../../../../../shared/widgets/skeleton_loaders.dart';
 
 class MyTripsScreen extends ConsumerWidget {
   const MyTripsScreen({super.key});
@@ -47,6 +48,9 @@ class MyTripsScreen extends ConsumerWidget {
           return RefreshIndicator(
             onRefresh: () async => ref.invalidate(myTripsProvider),
             child: ListView.builder(
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
               padding: const EdgeInsets.all(AppTheme.spacingMD),
               itemCount: trips.length,
               itemBuilder: (context, index) {
@@ -59,7 +63,7 @@ class MyTripsScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const TripListSkeleton(),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

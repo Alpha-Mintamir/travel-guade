@@ -16,6 +16,7 @@ export class UserService {
         cityOfResidence: true,
         bio: true,
         travelPreferences: true,
+        interests: true,
         emailVerified: true,
         createdAt: true,
       },
@@ -34,6 +35,7 @@ export class UserService {
       cityOfResidence: user.cityOfResidence,
       bio: user.bio,
       travelPreferences: user.travelPreferences,
+      interests: user.interests,
       emailVerified: user.emailVerified,
       createdAt: user.createdAt,
     };
@@ -46,6 +48,7 @@ export class UserService {
       cityOfResidence?: string;
       bio?: string;
       travelPreferences?: string;
+      interests?: string;
     }
   ) {
     const user = await prisma.user.update({
@@ -65,6 +68,7 @@ export class UserService {
         cityOfResidence: true,
         bio: true,
         travelPreferences: true,
+        interests: true,
         emailVerified: true,
         createdAt: true,
       },
@@ -78,6 +82,7 @@ export class UserService {
       cityOfResidence: user.cityOfResidence,
       bio: user.bio,
       travelPreferences: user.travelPreferences,
+      interests: user.interests,
       emailVerified: user.emailVerified,
       createdAt: user.createdAt,
     };
@@ -114,6 +119,7 @@ export class UserService {
         cityOfResidence: true,
         bio: true,
         travelPreferences: true,
+        interests: true,
         createdAt: true,
       },
     });
@@ -129,6 +135,7 @@ export class UserService {
       cityOfResidence: user.cityOfResidence,
       bio: user.bio,
       travelPreferences: user.travelPreferences,
+      interests: user.interests,
       createdAt: user.createdAt,
     };
   }

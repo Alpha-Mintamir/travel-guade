@@ -1,6 +1,6 @@
-# TravelBro Backend API
+# Travel Buddy Backend API
 
-Backend API for TravelBro - Ethiopian Travel Partner mobile app. Built with Node.js, TypeScript, Express, Prisma, PostgreSQL, Better Auth, and Socket.io.
+Backend API for Travel Buddy - Ethiopian Travel Partner mobile app. Built with Node.js, TypeScript, Express, Prisma, PostgreSQL, Better Auth, and Socket.io.
 
 ## Features
 

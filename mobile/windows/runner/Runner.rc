@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.travelbro" "\0"
-            VALUE "FileDescription", "travel_bro" "\0"
+            VALUE "FileDescription", "Travel Buddy" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "travel_bro" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.travelbro. All rights reserved." "\0"
             VALUE "OriginalFilename", "travel_bro.exe" "\0"
-            VALUE "ProductName", "travel_bro" "\0"
+            VALUE "ProductName", "Travel Buddy" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

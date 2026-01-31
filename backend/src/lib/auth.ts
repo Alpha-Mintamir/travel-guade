@@ -11,7 +11,7 @@ export async function getAuth() {
   const { prismaAdapter } = await import("better-auth/adapters/prisma");
   
   authInstance = betterAuth({
-    appName: "TravelBro",
+    appName: "Travel Buddy",
     database: prismaAdapter(prisma, {
       provider: "postgresql",
     }),

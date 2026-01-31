@@ -4,6 +4,8 @@ import '../../core/constants/api_constants.dart';
 import '../models/user.dart';
 import '../models/trip.dart';
 import '../models/destination.dart';
+import '../models/trip_request.dart';
+import '../models/notification.dart';
 
 class ApiService {
   final Dio _dio;
@@ -67,6 +69,20 @@ class ApiService {
     );
   }
 
+  Future<void> forgotPassword(String email) async {
+    await _dio.post(
+      ApiConstants.forgotPassword,
+      data: {'email': email},
+    );
+  }
+
+  Future<void> resetPassword(String token, String newPassword) async {
+    await _dio.post(
+      ApiConstants.resetPassword,
+      data: {'token': token, 'newPassword': newPassword},
+    );
+  }
+
   // User endpoints
   Future<User> getCurrentUser() async {
     final response = await _dio.get(ApiConstants.currentUser);
@@ -78,6 +94,7 @@ class ApiService {
     String? cityOfResidence,
     String? bio,
     String? travelPreferences,
+    String? interests,
   }) async {
     final response = await _dio.patch(
       ApiConstants.updateProfile,
@@ -86,6 +103,7 @@ class ApiService {
         if (cityOfResidence != null) 'cityOfResidence': cityOfResidence,
         if (bio != null) 'bio': bio,
         if (travelPreferences != null) 'travelPreferences': travelPreferences,
+        if (interests != null) 'interests': interests,
       },
     );
     return User.fromJson(response.data['data']);
@@ -108,6 +126,7 @@ class ApiService {
     String? region,
     DateTime? startDate,
     DateTime? endDate,
+    String? search,
     int? page,
     int? limit,
   }) async {
@@ -116,6 +135,7 @@ class ApiService {
     if (region != null) queryParams['region'] = region;
     if (startDate != null) queryParams['startDate'] = startDate.toIso8601String();
     if (endDate != null) queryParams['endDate'] = endDate.toIso8601String();
+    if (search != null && search.isNotEmpty) queryParams['search'] = search;
     if (page != null) queryParams['page'] = page;
     if (limit != null) queryParams['limit'] = limit;
 
@@ -185,6 +205,45 @@ class ApiService {
         .toList();
   }
 
+  Future<Trip> updateTrip(
+    String id, {
+    String? destinationName,
+    DateTime? startDate,
+    DateTime? endDate,
+    bool? flexibleDates,
+    String? description,
+    int? peopleNeeded,
+    String? budgetLevel,
+    String? travelStyle,
+    String? instagramUsername,
+    String? phoneNumber,
+    String? telegramUsername,
+    String? photoUrl,
+  }) async {
+    final response = await _dio.patch(
+      '${ApiConstants.trips}/$id',
+      data: {
+        if (destinationName != null) 'destinationName': destinationName,
+        if (startDate != null) 'startDate': startDate.toIso8601String(),
+        if (endDate != null) 'endDate': endDate.toIso8601String(),
+        if (flexibleDates != null) 'flexibleDates': flexibleDates,
+        if (description != null) 'description': description,
+        if (peopleNeeded != null) 'peopleNeeded': peopleNeeded,
+        if (budgetLevel != null) 'budgetLevel': budgetLevel,
+        if (travelStyle != null) 'travelStyle': travelStyle,
+        if (instagramUsername != null) 'instagramUsername': instagramUsername,
+        if (phoneNumber != null) 'phoneNumber': phoneNumber,
+        if (telegramUsername != null) 'telegramUsername': telegramUsername,
+        if (photoUrl != null) 'photoUrl': photoUrl,
+      },
+    );
+    return Trip.fromJson(response.data['data']);
+  }
+
+  Future<void> deleteTrip(String id) async {
+    await _dio.delete('${ApiConstants.trips}/$id');
+  }
+
   // Destination endpoints
   Future<List<Destination>> getDestinations({
     String? region,
@@ -202,6 +261,100 @@ class ApiService {
         .map((json) => Destination.fromJson(json))
         .toList();
   }
+
+  // Request endpoints
+  Future<TripRequest> createTripRequest({
+    required String tripId,
+    String? message,
+  }) async {
+    final response = await _dio.post(
+      '${ApiConstants.tripRequests}/trips/$tripId/requests',
+      data: {
+        if (message != null) 'message': message,
+      },
+    );
+    return TripRequest.fromJson(response.data['data']);
+  }
+
+  Future<List<TripRequest>> getSentRequests() async {
+    final response = await _dio.get(ApiConstants.sentRequests);
+    return (response.data['data'] as List)
+        .map((json) => TripRequest.fromJson(json))
+        .toList();
+  }
+
+  Future<List<TripRequest>> getReceivedRequests() async {
+    final response = await _dio.get(ApiConstants.receivedRequests);
+    return (response.data['data'] as List)
+        .map((json) => TripRequest.fromJson(json))
+        .toList();
+  }
+
+  Future<TripRequest> respondToRequest({
+    required String requestId,
+    required String status, // 'ACCEPTED' or 'REJECTED'
+  }) async {
+    final response = await _dio.patch(
+      '${ApiConstants.tripRequests}/$requestId/respond',
+      data: {'status': status},
+    );
+    return TripRequest.fromJson(response.data['data']);
+  }
+
+  Future<TripRequest?> getMyRequestForTrip(String tripId) async {
+    try {
+      final response = await _dio.get(
+        '${ApiConstants.tripRequests}/trips/$tripId/my-request',
+      );
+      final data = response.data['data'];
+      if (data == null) return null;
+      return TripRequest.fromJson(data);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return null;
+      }
+      rethrow;
+    }
+  }
+
+  // Chat/Conversation endpoints
+  Future<List<Conversation>> getConversations() async {
+    final response = await _dio.get(ApiConstants.conversations);
+    return (response.data['data'] as List)
+        .map((json) => Conversation.fromJson(json))
+        .toList();
+  }
+
+  Future<MessagesResponse> getMessages({
+    required String requestId,
+    int page = 1,
+    int limit = 50,
+  }) async {
+    final response = await _dio.get(
+      '${ApiConstants.tripRequests}/$requestId/messages',
+      queryParameters: {'page': page, 'limit': limit},
+    );
+    return MessagesResponse.fromJson(response.data['data']);
+  }
+
+  // Notification endpoints
+  Future<List<AppNotification>> getNotifications() async {
+    final response = await _dio.get(ApiConstants.notifications);
+    return (response.data['data'] as List)
+        .map((json) => AppNotification.fromJson(json))
+        .toList();
+  }
+
+  Future<AppNotification> markNotificationAsRead(String notificationId) async {
+    final response = await _dio.patch(
+      '${ApiConstants.notifications}/$notificationId/read',
+    );
+    return AppNotification.fromJson(response.data['data']);
+  }
+
+  Future<void> markAllNotificationsAsRead() async {
+    await _dio.post('${ApiConstants.notifications}/read-all');
+  }
 }
 
 class AuthResponse {
@@ -214,6 +367,45 @@ class AuthResponse {
     return AuthResponse(
       token: json['token'] as String,
       user: User.fromJson(json['user'] as Map<String, dynamic>),
+    );
+  }
+}
+
+class MessagesResponse {
+  final List<Message> messages;
+  final Pagination pagination;
+
+  MessagesResponse({required this.messages, required this.pagination});
+
+  factory MessagesResponse.fromJson(Map<String, dynamic> json) {
+    return MessagesResponse(
+      messages: (json['messages'] as List)
+          .map((m) => Message.fromJson(m))
+          .toList(),
+      pagination: Pagination.fromJson(json['pagination']),
+    );
+  }
+}
+
+class Pagination {
+  final int page;
+  final int limit;
+  final int total;
+  final int totalPages;
+
+  Pagination({
+    required this.page,
+    required this.limit,
+    required this.total,
+    required this.totalPages,
+  });
+
+  factory Pagination.fromJson(Map<String, dynamic> json) {
+    return Pagination(
+      page: json['page'] as int,
+      limit: json['limit'] as int,
+      total: json['total'] as int,
+      totalPages: json['totalPages'] as int,
     );
   }
 }

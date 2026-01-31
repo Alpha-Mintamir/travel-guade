@@ -19,7 +19,6 @@ class TripCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Use trip photo if available
     final imageUrl = trip.photoUrl ?? '';
     
     return Card(
@@ -30,65 +29,68 @@ class TripCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Trip Photo
-            Stack(
-              children: [
-                imageUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        height: 160,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) => Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: Container(color: Colors.white),
-                        ),
-                        errorWidget: (_, __, ___) => Container(
+            // Trip Photo with Hero animation
+            Hero(
+              tag: 'trip-image-${trip.id}',
+              child: Stack(
+                children: [
+                  imageUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          height: 160,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(height: 160, color: Colors.white),
+                          ),
+                          errorWidget: (_, __, ___) => Container(
+                            height: 160,
+                            color: AppColors.softTeal,
+                            child: const Icon(Icons.image_not_supported, size: 48),
+                          ),
+                        )
+                      : Container(
                           height: 160,
                           color: AppColors.softTeal,
-                          child: const Icon(Icons.image_not_supported, size: 48),
-                        ),
-                      )
-                    : Container(
-                        height: 160,
-                        color: AppColors.softTeal,
-                        child: const Center(
-                          child: Icon(Icons.photo, size: 48, color: Colors.white54),
-                        ),
-                      ),
-                // Instagram badge
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.camera_alt_outlined,
-                          size: 14,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          trip.instagramUsername,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
+                          child: const Center(
+                            child: Icon(Icons.photo, size: 48, color: Colors.white54),
                           ),
                         ),
-                      ],
+                  // Instagram badge
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.camera_alt_outlined,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            trip.instagramUsername,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(AppTheme.spacingMD),

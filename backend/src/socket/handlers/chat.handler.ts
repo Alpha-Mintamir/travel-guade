@@ -1,7 +1,43 @@
 import { Server } from 'socket.io';
 import { prisma } from '../../config/database';
+import { RequestStatus } from '@prisma/client';
 import { logger } from '../../utils/logger';
 import { AuthenticatedSocket } from '../middleware/socket-auth.middleware';
+import { NotificationService } from '../../services/notification.service';
+
+// Helper function to check if users have blocked each other
+async function areUsersBlocked(userId1: string, userId2: string): Promise<boolean> {
+  const block = await prisma.block.findFirst({
+    where: {
+      OR: [
+        { blockerId: userId1, blockedId: userId2 },
+        { blockerId: userId2, blockedId: userId1 },
+      ],
+    },
+  });
+  return !!block;
+}
+
+// Standardized socket error handler
+function emitSocketError(
+  socket: AuthenticatedSocket,
+  message: string,
+  context: Record<string, unknown> = {}
+): void {
+  logger.warn({ ...context, userId: socket.user?.userId }, `Socket error: ${message}`);
+  socket.emit('error', { message });
+}
+
+// Basic XSS sanitization - removes potential HTML/script tags
+function sanitizeMessage(content: string): string {
+  return content
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;')
+    .trim();
+}
 
 export function registerChatHandlers(io: Server, socket: AuthenticatedSocket) {
   const userId = socket.user!.userId;
@@ -20,14 +56,23 @@ export function registerChatHandlers(io: Server, socket: AuthenticatedSocket) {
       });
 
       if (!request) {
-        socket.emit('error', { message: 'Request not found' });
-        return;
+        return emitSocketError(socket, 'Request not found', { requestId });
       }
 
       // User must be either the requester or trip owner
       if (request.requesterId !== userId && request.trip.userId !== userId) {
-        socket.emit('error', { message: 'Not authorized to join this conversation' });
-        return;
+        return emitSocketError(socket, 'Not authorized to join this conversation', { requestId });
+      }
+
+      // Only allow joining conversations for accepted requests
+      if (request.status !== RequestStatus.ACCEPTED) {
+        return emitSocketError(socket, 'Conversation is only available for accepted requests', { requestId, status: request.status });
+      }
+
+      // Check if users have blocked each other
+      const otherUserId = userId === request.requesterId ? request.trip.userId : request.requesterId;
+      if (await areUsersBlocked(userId, otherUserId)) {
+        return emitSocketError(socket, 'Cannot join this conversation', { requestId });
       }
 
       // Join room
@@ -36,8 +81,8 @@ export function registerChatHandlers(io: Server, socket: AuthenticatedSocket) {
 
       socket.emit('joined_conversation', { requestId });
     } catch (error) {
-      logger.error({ error }, 'Error joining conversation');
-      socket.emit('error', { message: 'Failed to join conversation' });
+      logger.error({ error, userId }, 'Error joining conversation');
+      emitSocketError(socket, 'Failed to join conversation');
     }
   });
 
@@ -48,7 +93,7 @@ export function registerChatHandlers(io: Server, socket: AuthenticatedSocket) {
       socket.leave(`request_${requestId}`);
       logger.info({ userId, requestId }, 'User left conversation');
     } catch (error) {
-      logger.error({ error }, 'Error leaving conversation');
+      logger.error({ error, userId }, 'Error leaving conversation');
     }
   });
 
@@ -58,8 +103,12 @@ export function registerChatHandlers(io: Server, socket: AuthenticatedSocket) {
       const { requestId, content } = data;
 
       if (!content || content.trim().length === 0) {
-        socket.emit('error', { message: 'Message content cannot be empty' });
-        return;
+        return emitSocketError(socket, 'Message content cannot be empty', { requestId });
+      }
+
+      // Validate message length (prevent extremely long messages)
+      if (content.trim().length > 5000) {
+        return emitSocketError(socket, 'Message is too long (max 5000 characters)', { requestId });
       }
 
       // Verify user is part of this conversation
@@ -71,8 +120,12 @@ export function registerChatHandlers(io: Server, socket: AuthenticatedSocket) {
       });
 
       if (!request) {
-        socket.emit('error', { message: 'Request not found' });
-        return;
+        return emitSocketError(socket, 'Request not found', { requestId });
+      }
+
+      // Only allow messaging for accepted requests
+      if (request.status !== RequestStatus.ACCEPTED) {
+        return emitSocketError(socket, 'Messaging is only available for accepted requests', { requestId, status: request.status });
       }
 
       // Determine sender and receiver
@@ -81,9 +134,16 @@ export function registerChatHandlers(io: Server, socket: AuthenticatedSocket) {
         userId === request.requesterId ? request.trip.userId : request.requesterId;
 
       if (senderId !== request.requesterId && senderId !== request.trip.userId) {
-        socket.emit('error', { message: 'Not authorized to send message in this conversation' });
-        return;
+        return emitSocketError(socket, 'Not authorized to send message in this conversation', { requestId });
       }
+
+      // Check if users have blocked each other
+      if (await areUsersBlocked(senderId, receiverId)) {
+        return emitSocketError(socket, 'Cannot send message to this user', { requestId });
+      }
+
+      // Sanitize message content to prevent XSS
+      const sanitizedContent = sanitizeMessage(content);
 
       // Create message
       const message = await prisma.message.create({
@@ -91,7 +151,7 @@ export function registerChatHandlers(io: Server, socket: AuthenticatedSocket) {
           senderId,
           receiverId,
           tripRequestId: requestId,
-          content: content.trim(),
+          content: sanitizedContent,
         },
         include: {
           sender: {
@@ -107,25 +167,23 @@ export function registerChatHandlers(io: Server, socket: AuthenticatedSocket) {
       // Emit to room
       io.to(`request_${requestId}`).emit('message_received', message);
 
-      // Create notification for receiver
-      await prisma.notification.create({
+      // Create notification for receiver (will also emit via socket)
+      await NotificationService.createNotification({
+        userId: receiverId,
+        type: 'NEW_MESSAGE',
+        title: 'New Message',
+        body: `${message.sender.fullName} sent you a message`,
         data: {
-          userId: receiverId,
-          type: 'NEW_MESSAGE',
-          title: 'New Message',
-          body: `${message.sender.fullName} sent you a message`,
-          data: {
-            messageId: message.id,
-            requestId,
-            senderId,
-          },
+          messageId: message.id,
+          requestId,
+          senderId,
         },
       });
 
       logger.info({ messageId: message.id, requestId }, 'Message sent');
     } catch (error) {
-      logger.error({ error }, 'Error sending message');
-      socket.emit('error', { message: 'Failed to send message' });
+      logger.error({ error, userId }, 'Error sending message');
+      emitSocketError(socket, 'Failed to send message');
     }
   });
 
@@ -138,7 +196,7 @@ export function registerChatHandlers(io: Server, socket: AuthenticatedSocket) {
         requestId,
       });
     } catch (error) {
-      logger.error({ error }, 'Error broadcasting typing start');
+      logger.error({ error, userId }, 'Error broadcasting typing start');
     }
   });
 
@@ -150,7 +208,7 @@ export function registerChatHandlers(io: Server, socket: AuthenticatedSocket) {
         requestId,
       });
     } catch (error) {
-      logger.error({ error }, 'Error broadcasting typing stop');
+      logger.error({ error, userId }, 'Error broadcasting typing stop');
     }
   });
 
@@ -159,18 +217,39 @@ export function registerChatHandlers(io: Server, socket: AuthenticatedSocket) {
     try {
       const { messageId } = data;
 
+      // Fetch message with request details to verify conversation membership
       const message = await prisma.message.findUnique({
         where: { id: messageId },
+        include: {
+          tripRequest: {
+            include: {
+              trip: {
+                select: { userId: true },
+              },
+            },
+          },
+        },
       });
 
       if (!message) {
-        socket.emit('error', { message: 'Message not found' });
-        return;
+        return emitSocketError(socket, 'Message not found', { messageId });
       }
 
+      // Verify user is the intended receiver
       if (message.receiverId !== userId) {
-        socket.emit('error', { message: 'Not authorized' });
-        return;
+        return emitSocketError(socket, 'Not authorized to mark this message as read', { messageId });
+      }
+
+      // Additional check: verify user is part of this conversation
+      const isRequester = message.tripRequest.requesterId === userId;
+      const isTripOwner = message.tripRequest.trip.userId === userId;
+      if (!isRequester && !isTripOwner) {
+        return emitSocketError(socket, 'Not authorized - not part of this conversation', { messageId });
+      }
+
+      // Verify request is accepted (messages should only be marked read for accepted requests)
+      if (message.tripRequest.status !== RequestStatus.ACCEPTED) {
+        return emitSocketError(socket, 'Cannot mark message as read - request not accepted', { messageId });
       }
 
       await prisma.message.update({
@@ -182,10 +261,62 @@ export function registerChatHandlers(io: Server, socket: AuthenticatedSocket) {
         messageId,
       });
 
-      logger.info({ messageId }, 'Message marked as read');
+      logger.info({ messageId, userId }, 'Message marked as read');
     } catch (error) {
-      logger.error({ error }, 'Error marking message as read');
-      socket.emit('error', { message: 'Failed to mark message as read' });
+      logger.error({ error, userId }, 'Error marking message as read');
+      emitSocketError(socket, 'Failed to mark message as read');
+    }
+  });
+
+  // Mark all messages in a conversation as read
+  socket.on('mark_all_read', async (data: { requestId: string }) => {
+    try {
+      const { requestId } = data;
+
+      // Verify user is part of this conversation
+      const request = await prisma.tripRequest.findUnique({
+        where: { id: requestId },
+        include: {
+          trip: {
+            select: { userId: true },
+          },
+        },
+      });
+
+      if (!request) {
+        return emitSocketError(socket, 'Request not found', { requestId });
+      }
+
+      const isRequester = request.requesterId === userId;
+      const isTripOwner = request.trip.userId === userId;
+      if (!isRequester && !isTripOwner) {
+        return emitSocketError(socket, 'Not authorized - not part of this conversation', { requestId });
+      }
+
+      if (request.status !== RequestStatus.ACCEPTED) {
+        return emitSocketError(socket, 'Cannot mark messages as read - request not accepted', { requestId });
+      }
+
+      // Mark all unread messages for this user as read
+      const result = await prisma.message.updateMany({
+        where: {
+          tripRequestId: requestId,
+          receiverId: userId,
+          isRead: false,
+        },
+        data: { isRead: true },
+      });
+
+      io.to(`request_${requestId}`).emit('all_messages_read', {
+        requestId,
+        userId,
+        count: result.count,
+      });
+
+      logger.info({ requestId, userId, count: result.count }, 'All messages marked as read');
+    } catch (error) {
+      logger.error({ error, userId }, 'Error marking all messages as read');
+      emitSocketError(socket, 'Failed to mark messages as read');
     }
   });
 }

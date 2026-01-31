@@ -6,5 +6,6 @@ export const updateProfileSchema = z.object({
     cityOfResidence: z.string().optional(),
     bio: z.string().max(500).optional(),
     travelPreferences: z.string().optional(),
+    interests: z.string().max(1000).optional(),
   }),
 });

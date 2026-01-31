@@ -13,6 +13,7 @@ class User with _$User {
     String? cityOfResidence,
     String? bio,
     String? travelPreferences,
+    String? interests,
     @Default(false) bool emailVerified,
     required DateTime createdAt,
   }) = _User;

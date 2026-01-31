@@ -1,6 +1,8 @@
 import { prisma } from '../config/database';
 import { NotificationType } from '@prisma/client';
 import { NotFoundError } from '../utils/errors';
+import { getIO } from '../socket';
+import { logger } from '../utils/logger';
 
 interface CreateNotificationData {
   userId: string;
@@ -15,6 +17,13 @@ export class NotificationService {
     const notification = await prisma.notification.create({
       data,
     });
+
+    // Emit real-time notification via socket
+    const io = getIO();
+    if (io) {
+      io.to(`user_${data.userId}`).emit('notification', notification);
+      logger.info({ userId: data.userId, notificationId: notification.id }, 'Notification emitted to user');
+    }
 
     return notification;
   }

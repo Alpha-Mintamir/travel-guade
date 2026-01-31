@@ -48,6 +48,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
           padding: const EdgeInsets.all(AppTheme.spacingLG),
           child: Form(
             key: _formKey,
@@ -112,7 +115,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: isLoading ? null : () {
-                      // TODO: Navigate to forgot password
+                      context.push('/auth/forgot-password');
                     },
                     child: const Text(AppStrings.forgotPassword),
                   ),

@@ -30,7 +30,7 @@ abstract class AppTheme {
     cardTheme: CardThemeData(
       color: AppColors.surface,
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -74,7 +74,7 @@ abstract class AppTheme {
     cardTheme: CardThemeData(
       color: AppColors.darkCard,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.darkSurface,

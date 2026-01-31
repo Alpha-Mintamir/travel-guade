@@ -37,6 +37,43 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
   final List<String> _budgetLevels = ['BUDGET', 'MEDIUM', 'LUXURY'];
   final List<String> _travelStyles = ['ADVENTURE', 'CULTURAL', 'RELAXATION', 'PHOTOGRAPHY', 'FOOD', 'NATURE'];
 
+  // Suggested Ethiopian tourism destinations
+  static const List<String> _suggestedDestinations = [
+    'Lalibela',
+    'Gondar',
+    'Axum',
+    'Simien Mountains',
+    'Danakil Depression',
+    'Omo Valley',
+    'Bale Mountains',
+    'Harar',
+    'Lake Tana',
+    'Bahir Dar',
+    'Blue Nile Falls',
+    'Addis Ababa',
+    'Dire Dawa',
+    'Awash National Park',
+    'Entoto',
+    'ላልይበላ',
+    'ጎንደር',
+    'አክሱም',
+    'ሐረር',
+  ];
+
+  void _addDestination(String destination) {
+    final currentText = _destinationController.text.trim();
+    if (currentText.isEmpty) {
+      _destinationController.text = destination;
+    } else {
+      // Replace current text with the selected destination
+      _destinationController.text = destination;
+    }
+    // Move cursor to end
+    _destinationController.selection = TextSelection.fromPosition(
+      TextPosition(offset: _destinationController.text.length),
+    );
+  }
+
   @override
   void dispose() {
     _destinationController.dispose();
@@ -146,7 +183,8 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(tripsNotifierProvider.notifier).createTrip(
+      // Create trip with optimistic update - returns immediately
+      final newTrip = await ref.read(tripsNotifierProvider.notifier).createTrip(
             destinationName: _destinationController.text.trim(),
             startDate: _startDate,
             endDate: _endDate,
@@ -166,6 +204,9 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
                 : _telegramController.text.trim(),
             photoUrl: _uploadedPhotoUrl,
           );
+      
+      // Also update my trips list optimistically
+      ref.read(myTripsNotifierProvider.notifier).addTrip(newTrip);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -226,6 +267,9 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
           padding: const EdgeInsets.all(AppTheme.spacingMD),
           children: [
             // Trip Photo (Required)
@@ -306,7 +350,29 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
               'Where do you want to go? *',
               style: Theme.of(context).textTheme.titleMedium,
             ),
+            const SizedBox(height: AppTheme.spacingXS),
+            Text(
+              'Tap a suggestion or type your own destination',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
             const SizedBox(height: AppTheme.spacingSM),
+            
+            // Destination suggestion chips
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _suggestedDestinations.map((destination) {
+                return ActionChip(
+                  label: Text(destination),
+                  onPressed: () => _addDestination(destination),
+                  avatar: const Icon(Icons.place, size: 18),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: AppTheme.spacingSM),
+            
             TextFormField(
               controller: _destinationController,
               decoration: const InputDecoration(

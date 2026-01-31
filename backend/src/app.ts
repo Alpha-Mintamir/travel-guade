@@ -67,7 +67,7 @@ app.use('/api', routes);
 // Root endpoint
 app.get('/', (_req, res) => {
   res.json({
-    message: 'TravelBro API',
+    message: 'Travel Buddy API',
     version: '1.0.0',
     status: 'running',
   });

@@ -1,8 +1,9 @@
-import { Resend } from 'resend';
+// import { Resend } from 'resend';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
 
-const resend = new Resend(env.RESEND_API_KEY);
+// TODO: Uncomment when you have a Resend API key and domain
+// const resend = new Resend(env.RESEND_API_KEY);
 
 export class EmailService {
   static async sendVerificationEmail(email: string, token: string) {
@@ -10,15 +11,22 @@ export class EmailService {
     const actualToken = token.includes('?') ? token.split('token=')[1] || token : token;
     const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${actualToken}`;
     
+    // EMAIL SENDING DISABLED - Log the verification URL instead
+    // When you have an email service configured, uncomment the code below
+    logger.info({ email, verificationUrl, token: actualToken }, 
+      '📧 EMAIL DISABLED - Verification email would be sent. Use this URL to verify:');
+    console.log(`\n🔗 VERIFICATION LINK for ${email}:\n${verificationUrl}\n`);
+    
+    /* TODO: Uncomment when email service is configured
     try {
       await resend.emails.send({
         from: env.EMAIL_FROM,
         to: email,
-        subject: 'Verify your TravelBro account',
+        subject: 'Verify your Travel Buddy account',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #1D3557;">Welcome to TravelBro! 🌍</h2>
-            <p>Thank you for joining TravelBro, the Ethiopian travel companion platform.</p>
+            <h2 style="color: #1D3557;">Welcome to Travel Buddy! 🌍</h2>
+            <p>Thank you for joining Travel Buddy, the Ethiopian travel companion platform.</p>
             <p>Please verify your email address by clicking the button below:</p>
             <div style="text-align: center; margin: 30px 0;">
               <a href="${verificationUrl}" 
@@ -43,6 +51,7 @@ export class EmailService {
       logger.error({ error, email }, 'Failed to send verification email');
       throw error;
     }
+    */
   }
 
   static async sendPasswordResetEmail(email: string, token: string) {
@@ -50,15 +59,22 @@ export class EmailService {
     const actualToken = token.includes('?') ? token.split('token=')[1] || token : token;
     const resetUrl = `${env.FRONTEND_URL}/reset-password?token=${actualToken}`;
     
+    // EMAIL SENDING DISABLED - Log the reset URL instead
+    // When you have an email service configured, uncomment the code below
+    logger.info({ email, resetUrl, token: actualToken }, 
+      '📧 EMAIL DISABLED - Password reset email would be sent. Use this URL to reset:');
+    console.log(`\n🔗 PASSWORD RESET LINK for ${email}:\n${resetUrl}\n`);
+    
+    /* TODO: Uncomment when email service is configured
     try {
       await resend.emails.send({
         from: env.EMAIL_FROM,
         to: email,
-        subject: 'Reset your TravelBro password',
+        subject: 'Reset your Travel Buddy password',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #1D3557;">Password Reset Request</h2>
-            <p>We received a request to reset your password for your TravelBro account.</p>
+            <p>We received a request to reset your password for your Travel Buddy account.</p>
             <p>Click the button below to reset your password:</p>
             <div style="text-align: center; margin: 30px 0;">
               <a href="${resetUrl}" 
@@ -86,5 +102,6 @@ export class EmailService {
       logger.error({ error, email }, 'Failed to send password reset email');
       throw error;
     }
+    */
   }
 }

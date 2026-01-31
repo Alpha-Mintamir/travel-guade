@@ -60,4 +60,39 @@ export class RequestController {
       next(error);
     }
   }
+
+  static async getMessages(req: Request, res: Response, next: NextFunction) {
+    try {
+      const requestId = req.params.id as string;
+      const userId = req.user!.userId;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50;
+
+      const result = await RequestService.getMessages(requestId, userId, page, limit);
+      ApiResponse.success(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getConversations(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user!.userId;
+      const conversations = await RequestService.getConversations(userId);
+      ApiResponse.success(res, conversations);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getRequestByTripAndUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const tripId = req.params.tripId as string;
+      const userId = req.user!.userId;
+      const request = await RequestService.getRequestByTripAndUser(tripId, userId);
+      ApiResponse.success(res, request);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

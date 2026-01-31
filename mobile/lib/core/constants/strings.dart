@@ -1,6 +1,6 @@
 abstract class AppStrings {
   // App Info
-  static const String appName = 'TravelBro';
+  static const String appName = 'Travel Buddy';
   static const String appTagline = 'Find Your Travel Partner in Ethiopia';
   
   // Auth
@@ -50,6 +50,8 @@ abstract class AppStrings {
   static const String cityOfResidence = 'City of Residence';
   static const String bio = 'Bio';
   static const String travelPreferences = 'Travel Preferences';
+  static const String interests = 'Interests';
+  static const String interestsHint = 'What are you interested in?';
   static const String settings = 'Settings';
   
   // Common

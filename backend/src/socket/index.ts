@@ -6,16 +6,29 @@ import { registerNotificationHandlers } from './handlers/notification.handler';
 import { logger } from '../utils/logger';
 import { env } from '../config/env';
 
+// Store io instance for global access
+let ioInstance: Server | null = null;
+
+export function getIO(): Server | null {
+  return ioInstance;
+}
+
 export function initializeSocketIO(httpServer: HTTPServer): Server {
-  const allowedOrigins = env.ALLOWED_ORIGINS.split(',');
+  // Handle CORS origins - if '*' is set, allow all origins
+  const corsOrigin = env.ALLOWED_ORIGINS === '*' 
+    ? true 
+    : env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean);
 
   const io = new Server(httpServer, {
     cors: {
-      origin: allowedOrigins,
+      origin: corsOrigin,
       credentials: true,
     },
     transports: ['websocket', 'polling'],
   });
+
+  // Store instance for global access
+  ioInstance = io;
 
   // Authentication middleware
   io.use(socketAuthMiddleware);

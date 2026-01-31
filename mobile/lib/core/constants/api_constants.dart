@@ -30,9 +30,7 @@ abstract class ApiConstants {
   static const String tripRequests = '/requests';
   static const String sentRequests = '/requests/sent';
   static const String receivedRequests = '/requests/received';
-  
-  // Chat endpoints
-  static const String messages = '/messages';
+  static const String conversations = '/requests/conversations';
   
   // Notification endpoints
   static const String notifications = '/notifications';

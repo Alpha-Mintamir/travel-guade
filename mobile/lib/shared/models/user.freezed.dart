@@ -28,6 +28,7 @@ mixin _$User {
   String? get cityOfResidence => throw _privateConstructorUsedError;
   String? get bio => throw _privateConstructorUsedError;
   String? get travelPreferences => throw _privateConstructorUsedError;
+  String? get interests => throw _privateConstructorUsedError;
   bool get emailVerified => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
 
@@ -53,6 +54,7 @@ abstract class $UserCopyWith<$Res> {
     String? cityOfResidence,
     String? bio,
     String? travelPreferences,
+    String? interests,
     bool emailVerified,
     DateTime createdAt,
   });
@@ -80,6 +82,7 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? cityOfResidence = freezed,
     Object? bio = freezed,
     Object? travelPreferences = freezed,
+    Object? interests = freezed,
     Object? emailVerified = null,
     Object? createdAt = null,
   }) {
@@ -113,6 +116,10 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
                 ? _value.travelPreferences
                 : travelPreferences // ignore: cast_nullable_to_non_nullable
                       as String?,
+            interests: freezed == interests
+                ? _value.interests
+                : interests // ignore: cast_nullable_to_non_nullable
+                      as String?,
             emailVerified: null == emailVerified
                 ? _value.emailVerified
                 : emailVerified // ignore: cast_nullable_to_non_nullable
@@ -143,6 +150,7 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
     String? cityOfResidence,
     String? bio,
     String? travelPreferences,
+    String? interests,
     bool emailVerified,
     DateTime createdAt,
   });
@@ -167,6 +175,7 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? cityOfResidence = freezed,
     Object? bio = freezed,
     Object? travelPreferences = freezed,
+    Object? interests = freezed,
     Object? emailVerified = null,
     Object? createdAt = null,
   }) {
@@ -200,6 +209,10 @@ class __$$UserImplCopyWithImpl<$Res>
             ? _value.travelPreferences
             : travelPreferences // ignore: cast_nullable_to_non_nullable
                   as String?,
+        interests: freezed == interests
+            ? _value.interests
+            : interests // ignore: cast_nullable_to_non_nullable
+                  as String?,
         emailVerified: null == emailVerified
             ? _value.emailVerified
             : emailVerified // ignore: cast_nullable_to_non_nullable
@@ -224,6 +237,7 @@ class _$UserImpl implements _User {
     this.cityOfResidence,
     this.bio,
     this.travelPreferences,
+    this.interests,
     this.emailVerified = false,
     required this.createdAt,
   });
@@ -246,6 +260,8 @@ class _$UserImpl implements _User {
   @override
   final String? travelPreferences;
   @override
+  final String? interests;
+  @override
   @JsonKey()
   final bool emailVerified;
   @override
@@ -253,7 +269,7 @@ class _$UserImpl implements _User {
 
   @override
   String toString() {
-    return 'User(id: $id, email: $email, fullName: $fullName, profilePhotoUrl: $profilePhotoUrl, cityOfResidence: $cityOfResidence, bio: $bio, travelPreferences: $travelPreferences, emailVerified: $emailVerified, createdAt: $createdAt)';
+    return 'User(id: $id, email: $email, fullName: $fullName, profilePhotoUrl: $profilePhotoUrl, cityOfResidence: $cityOfResidence, bio: $bio, travelPreferences: $travelPreferences, interests: $interests, emailVerified: $emailVerified, createdAt: $createdAt)';
   }
 
   @override
@@ -272,6 +288,8 @@ class _$UserImpl implements _User {
             (identical(other.bio, bio) || other.bio == bio) &&
             (identical(other.travelPreferences, travelPreferences) ||
                 other.travelPreferences == travelPreferences) &&
+            (identical(other.interests, interests) ||
+                other.interests == interests) &&
             (identical(other.emailVerified, emailVerified) ||
                 other.emailVerified == emailVerified) &&
             (identical(other.createdAt, createdAt) ||
@@ -289,6 +307,7 @@ class _$UserImpl implements _User {
     cityOfResidence,
     bio,
     travelPreferences,
+    interests,
     emailVerified,
     createdAt,
   );
@@ -316,6 +335,7 @@ abstract class _User implements User {
     final String? cityOfResidence,
     final String? bio,
     final String? travelPreferences,
+    final String? interests,
     final bool emailVerified,
     required final DateTime createdAt,
   }) = _$UserImpl;
@@ -336,6 +356,8 @@ abstract class _User implements User {
   String? get bio;
   @override
   String? get travelPreferences;
+  @override
+  String? get interests;
   @override
   bool get emailVerified;
   @override

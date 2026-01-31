@@ -73,18 +73,19 @@ model User {
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
   
-  // Custom fields for TravelBro
+  // Custom fields for Travel Buddy
   fullName          String    @map("full_name")
   profilePhotoUrl   String?   @map("profile_photo_url")
   cityOfResidence   String?   @map("city_of_residence")
   bio               String?
   travelPreferences String?   @map("travel_preferences")
+  interests         String?
 
   // Better Auth relations
   sessions          Session[]
   accounts          Account[]
 
-  // TravelBro relations
+  // Travel Buddy relations
   trips             Trip[]
   sentRequests      TripRequest[]   @relation("RequestSender")
   sentMessages      Message[]       @relation("MessageSender")

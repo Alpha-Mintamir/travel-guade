@@ -14,6 +14,7 @@ _$UserImpl _$$UserImplFromJson(Map<String, dynamic> json) => _$UserImpl(
   cityOfResidence: json['cityOfResidence'] as String?,
   bio: json['bio'] as String?,
   travelPreferences: json['travelPreferences'] as String?,
+  interests: json['interests'] as String?,
   emailVerified: json['emailVerified'] as bool? ?? false,
   createdAt: DateTime.parse(json['createdAt'] as String),
 );
@@ -27,6 +28,7 @@ Map<String, dynamic> _$$UserImplToJson(_$UserImpl instance) =>
       'cityOfResidence': instance.cityOfResidence,
       'bio': instance.bio,
       'travelPreferences': instance.travelPreferences,
+      'interests': instance.interests,
       'emailVerified': instance.emailVerified,
       'createdAt': instance.createdAt.toIso8601String(),
     };

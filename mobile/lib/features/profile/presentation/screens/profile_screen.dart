@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../../core/constants/strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/extensions.dart';
-import '../../../../shared/models/user.dart';
+import '../../../../shared/widgets/skeleton_loaders.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -14,7 +15,6 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
-    final user = authState.valueOrNull;
 
     return Scaffold(
       appBar: AppBar(
@@ -34,6 +34,9 @@ class ProfileScreen extends ConsumerWidget {
             return const Center(child: Text('Not logged in'));
           }
           return SingleChildScrollView(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
             padding: const EdgeInsets.all(AppTheme.spacingMD),
             child: Column(
               children: [
@@ -42,7 +45,7 @@ class ProfileScreen extends ConsumerWidget {
                 CircleAvatar(
                   radius: 60,
                   backgroundImage: user.profilePhotoUrl != null
-                      ? NetworkImage(user.profilePhotoUrl!)
+                      ? CachedNetworkImageProvider(user.profilePhotoUrl!)
                       : null,
                   child: user.profilePhotoUrl == null
                       ? Text(
@@ -89,9 +92,21 @@ class ProfileScreen extends ConsumerWidget {
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () {
-                      // TODO: Navigate to edit profile
+                      context.push('/edit-profile');
                     },
                     child: const Text(AppStrings.editProfile),
+                  ),
+                ),
+                const SizedBox(height: AppTheme.spacingMD),
+                // Trip Requests button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      context.push('/requests');
+                    },
+                    icon: const Icon(Icons.mail_outline),
+                    label: const Text('Trip Requests'),
                   ),
                 ),
                 const SizedBox(height: AppTheme.spacingLG),
@@ -111,6 +126,46 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: AppTheme.spacingSM),
                           Text(user.bio!),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacingMD),
+                ],
+                // Interests section
+                if (user.interests != null && user.interests!.isNotEmpty) ...[
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppTheme.spacingMD),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.interests_outlined, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                AppStrings.interests,
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppTheme.spacingSM),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: user.interests!
+                                .split(',')
+                                .map((interest) => interest.trim())
+                                .where((interest) => interest.isNotEmpty)
+                                .map((interest) => Chip(
+                                      label: Text(interest),
+                                      visualDensity: VisualDensity.compact,
+                                    ))
+                                .toList(),
+                          ),
                         ],
                       ),
                     ),
@@ -138,7 +193,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ProfileSkeleton(),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

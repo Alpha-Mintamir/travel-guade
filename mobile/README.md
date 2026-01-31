@@ -1,4 +1,4 @@
-# travel_bro
+# Travel Buddy
 
 A new Flutter project.
 
