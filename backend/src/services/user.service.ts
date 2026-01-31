@@ -18,6 +18,8 @@ export class UserService {
         travelPreferences: true,
         interests: true,
         emailVerified: true,
+        gender: true,
+        dateOfBirth: true,
         createdAt: true,
       },
     });
@@ -37,6 +39,8 @@ export class UserService {
       travelPreferences: user.travelPreferences,
       interests: user.interests,
       emailVerified: user.emailVerified,
+      gender: user.gender,
+      dateOfBirth: user.dateOfBirth,
       createdAt: user.createdAt,
     };
   }
@@ -49,6 +53,9 @@ export class UserService {
       bio?: string;
       travelPreferences?: string;
       interests?: string;
+      gender?: 'MALE' | 'FEMALE';
+      dateOfBirth?: Date;
+      profilePhotoUrl?: string;
     }
   ) {
     const user = await prisma.user.update({
@@ -57,6 +64,8 @@ export class UserService {
         ...data,
         // Also update name field for Better Auth compatibility
         ...(data.fullName && { name: data.fullName }),
+        // Also update image field for Better Auth compatibility
+        ...(data.profilePhotoUrl && { image: data.profilePhotoUrl }),
       },
       select: {
         id: true,
@@ -70,6 +79,8 @@ export class UserService {
         travelPreferences: true,
         interests: true,
         emailVerified: true,
+        gender: true,
+        dateOfBirth: true,
         createdAt: true,
       },
     });
@@ -84,6 +95,8 @@ export class UserService {
       travelPreferences: user.travelPreferences,
       interests: user.interests,
       emailVerified: user.emailVerified,
+      gender: user.gender,
+      dateOfBirth: user.dateOfBirth,
       createdAt: user.createdAt,
     };
   }
@@ -120,6 +133,8 @@ export class UserService {
         bio: true,
         travelPreferences: true,
         interests: true,
+        gender: true,
+        dateOfBirth: true,
         createdAt: true,
       },
     });
@@ -136,6 +151,8 @@ export class UserService {
       bio: user.bio,
       travelPreferences: user.travelPreferences,
       interests: user.interests,
+      gender: user.gender,
+      dateOfBirth: user.dateOfBirth,
       createdAt: user.createdAt,
     };
   }

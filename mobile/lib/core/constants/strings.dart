@@ -53,6 +53,11 @@ abstract class AppStrings {
   static const String interests = 'Interests';
   static const String interestsHint = 'What are you interested in?';
   static const String settings = 'Settings';
+  static const String gender = 'Gender';
+  static const String dateOfBirth = 'Date of Birth';
+  static const String selectGender = 'Select Gender';
+  static const String male = 'Male';
+  static const String female = 'Female';
   
   // Common
   static const String save = 'Save';

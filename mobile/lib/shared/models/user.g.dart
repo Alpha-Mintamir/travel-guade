@@ -8,7 +8,7 @@ part of 'user.dart';
 
 _$UserImpl _$$UserImplFromJson(Map<String, dynamic> json) => _$UserImpl(
   id: json['id'] as String,
-  email: json['email'] as String,
+  email: json['email'] as String?,
   fullName: json['fullName'] as String,
   profilePhotoUrl: json['profilePhotoUrl'] as String?,
   cityOfResidence: json['cityOfResidence'] as String?,
@@ -16,7 +16,13 @@ _$UserImpl _$$UserImplFromJson(Map<String, dynamic> json) => _$UserImpl(
   travelPreferences: json['travelPreferences'] as String?,
   interests: json['interests'] as String?,
   emailVerified: json['emailVerified'] as bool? ?? false,
-  createdAt: DateTime.parse(json['createdAt'] as String),
+  gender: $enumDecodeNullable(_$GenderEnumMap, json['gender']),
+  dateOfBirth: json['dateOfBirth'] == null
+      ? null
+      : DateTime.parse(json['dateOfBirth'] as String),
+  createdAt: json['createdAt'] == null
+      ? null
+      : DateTime.parse(json['createdAt'] as String),
 );
 
 Map<String, dynamic> _$$UserImplToJson(_$UserImpl instance) =>
@@ -30,5 +36,12 @@ Map<String, dynamic> _$$UserImplToJson(_$UserImpl instance) =>
       'travelPreferences': instance.travelPreferences,
       'interests': instance.interests,
       'emailVerified': instance.emailVerified,
-      'createdAt': instance.createdAt.toIso8601String(),
+      'gender': _$GenderEnumMap[instance.gender],
+      'dateOfBirth': instance.dateOfBirth?.toIso8601String(),
+      'createdAt': instance.createdAt?.toIso8601String(),
     };
+
+const _$GenderEnumMap = {
+  Gender.male: 'MALE',
+  Gender.female: 'FEMALE',
+};

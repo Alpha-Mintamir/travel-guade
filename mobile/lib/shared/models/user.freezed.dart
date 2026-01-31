@@ -22,7 +22,8 @@ User _$UserFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$User {
   String get id => throw _privateConstructorUsedError;
-  String get email => throw _privateConstructorUsedError;
+  String? get email =>
+      throw _privateConstructorUsedError; // Optional for embedded user references (e.g., in TripRequest)
   String get fullName => throw _privateConstructorUsedError;
   String? get profilePhotoUrl => throw _privateConstructorUsedError;
   String? get cityOfResidence => throw _privateConstructorUsedError;
@@ -30,7 +31,9 @@ mixin _$User {
   String? get travelPreferences => throw _privateConstructorUsedError;
   String? get interests => throw _privateConstructorUsedError;
   bool get emailVerified => throw _privateConstructorUsedError;
-  DateTime get createdAt => throw _privateConstructorUsedError;
+  Gender? get gender => throw _privateConstructorUsedError;
+  DateTime? get dateOfBirth => throw _privateConstructorUsedError;
+  DateTime? get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this User to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -48,7 +51,7 @@ abstract class $UserCopyWith<$Res> {
   @useResult
   $Res call({
     String id,
-    String email,
+    String? email,
     String fullName,
     String? profilePhotoUrl,
     String? cityOfResidence,
@@ -56,7 +59,9 @@ abstract class $UserCopyWith<$Res> {
     String? travelPreferences,
     String? interests,
     bool emailVerified,
-    DateTime createdAt,
+    Gender? gender,
+    DateTime? dateOfBirth,
+    DateTime? createdAt,
   });
 }
 
@@ -76,7 +81,7 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
   @override
   $Res call({
     Object? id = null,
-    Object? email = null,
+    Object? email = freezed,
     Object? fullName = null,
     Object? profilePhotoUrl = freezed,
     Object? cityOfResidence = freezed,
@@ -84,7 +89,9 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? travelPreferences = freezed,
     Object? interests = freezed,
     Object? emailVerified = null,
-    Object? createdAt = null,
+    Object? gender = freezed,
+    Object? dateOfBirth = freezed,
+    Object? createdAt = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -92,10 +99,10 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
                       as String,
-            email: null == email
+            email: freezed == email
                 ? _value.email
                 : email // ignore: cast_nullable_to_non_nullable
-                      as String,
+                      as String?,
             fullName: null == fullName
                 ? _value.fullName
                 : fullName // ignore: cast_nullable_to_non_nullable
@@ -124,10 +131,18 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
                 ? _value.emailVerified
                 : emailVerified // ignore: cast_nullable_to_non_nullable
                       as bool,
-            createdAt: null == createdAt
+            gender: freezed == gender
+                ? _value.gender
+                : gender // ignore: cast_nullable_to_non_nullable
+                      as Gender?,
+            dateOfBirth: freezed == dateOfBirth
+                ? _value.dateOfBirth
+                : dateOfBirth // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            createdAt: freezed == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
+                      as DateTime?,
           )
           as $Val,
     );
@@ -144,7 +159,7 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
   @useResult
   $Res call({
     String id,
-    String email,
+    String? email,
     String fullName,
     String? profilePhotoUrl,
     String? cityOfResidence,
@@ -152,7 +167,9 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
     String? travelPreferences,
     String? interests,
     bool emailVerified,
-    DateTime createdAt,
+    Gender? gender,
+    DateTime? dateOfBirth,
+    DateTime? createdAt,
   });
 }
 
@@ -169,7 +186,7 @@ class __$$UserImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
-    Object? email = null,
+    Object? email = freezed,
     Object? fullName = null,
     Object? profilePhotoUrl = freezed,
     Object? cityOfResidence = freezed,
@@ -177,7 +194,9 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? travelPreferences = freezed,
     Object? interests = freezed,
     Object? emailVerified = null,
-    Object? createdAt = null,
+    Object? gender = freezed,
+    Object? dateOfBirth = freezed,
+    Object? createdAt = freezed,
   }) {
     return _then(
       _$UserImpl(
@@ -185,10 +204,10 @@ class __$$UserImplCopyWithImpl<$Res>
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
                   as String,
-        email: null == email
+        email: freezed == email
             ? _value.email
             : email // ignore: cast_nullable_to_non_nullable
-                  as String,
+                  as String?,
         fullName: null == fullName
             ? _value.fullName
             : fullName // ignore: cast_nullable_to_non_nullable
@@ -217,10 +236,18 @@ class __$$UserImplCopyWithImpl<$Res>
             ? _value.emailVerified
             : emailVerified // ignore: cast_nullable_to_non_nullable
                   as bool,
-        createdAt: null == createdAt
+        gender: freezed == gender
+            ? _value.gender
+            : gender // ignore: cast_nullable_to_non_nullable
+                  as Gender?,
+        dateOfBirth: freezed == dateOfBirth
+            ? _value.dateOfBirth
+            : dateOfBirth // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        createdAt: freezed == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
+                  as DateTime?,
       ),
     );
   }
@@ -228,10 +255,10 @@ class __$$UserImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$UserImpl implements _User {
+class _$UserImpl extends _User {
   const _$UserImpl({
     required this.id,
-    required this.email,
+    this.email,
     required this.fullName,
     this.profilePhotoUrl,
     this.cityOfResidence,
@@ -239,8 +266,10 @@ class _$UserImpl implements _User {
     this.travelPreferences,
     this.interests,
     this.emailVerified = false,
-    required this.createdAt,
-  });
+    this.gender,
+    this.dateOfBirth,
+    this.createdAt,
+  }) : super._();
 
   factory _$UserImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserImplFromJson(json);
@@ -248,7 +277,8 @@ class _$UserImpl implements _User {
   @override
   final String id;
   @override
-  final String email;
+  final String? email;
+  // Optional for embedded user references (e.g., in TripRequest)
   @override
   final String fullName;
   @override
@@ -265,11 +295,15 @@ class _$UserImpl implements _User {
   @JsonKey()
   final bool emailVerified;
   @override
-  final DateTime createdAt;
+  final Gender? gender;
+  @override
+  final DateTime? dateOfBirth;
+  @override
+  final DateTime? createdAt;
 
   @override
   String toString() {
-    return 'User(id: $id, email: $email, fullName: $fullName, profilePhotoUrl: $profilePhotoUrl, cityOfResidence: $cityOfResidence, bio: $bio, travelPreferences: $travelPreferences, interests: $interests, emailVerified: $emailVerified, createdAt: $createdAt)';
+    return 'User(id: $id, email: $email, fullName: $fullName, profilePhotoUrl: $profilePhotoUrl, cityOfResidence: $cityOfResidence, bio: $bio, travelPreferences: $travelPreferences, interests: $interests, emailVerified: $emailVerified, gender: $gender, dateOfBirth: $dateOfBirth, createdAt: $createdAt)';
   }
 
   @override
@@ -292,6 +326,9 @@ class _$UserImpl implements _User {
                 other.interests == interests) &&
             (identical(other.emailVerified, emailVerified) ||
                 other.emailVerified == emailVerified) &&
+            (identical(other.gender, gender) || other.gender == gender) &&
+            (identical(other.dateOfBirth, dateOfBirth) ||
+                other.dateOfBirth == dateOfBirth) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
@@ -309,6 +346,8 @@ class _$UserImpl implements _User {
     travelPreferences,
     interests,
     emailVerified,
+    gender,
+    dateOfBirth,
     createdAt,
   );
 
@@ -326,10 +365,10 @@ class _$UserImpl implements _User {
   }
 }
 
-abstract class _User implements User {
+abstract class _User extends User {
   const factory _User({
     required final String id,
-    required final String email,
+    final String? email,
     required final String fullName,
     final String? profilePhotoUrl,
     final String? cityOfResidence,
@@ -337,15 +376,18 @@ abstract class _User implements User {
     final String? travelPreferences,
     final String? interests,
     final bool emailVerified,
-    required final DateTime createdAt,
+    final Gender? gender,
+    final DateTime? dateOfBirth,
+    final DateTime? createdAt,
   }) = _$UserImpl;
+  const _User._() : super._();
 
   factory _User.fromJson(Map<String, dynamic> json) = _$UserImpl.fromJson;
 
   @override
   String get id;
   @override
-  String get email;
+  String? get email; // Optional for embedded user references (e.g., in TripRequest)
   @override
   String get fullName;
   @override
@@ -361,7 +403,11 @@ abstract class _User implements User {
   @override
   bool get emailVerified;
   @override
-  DateTime get createdAt;
+  Gender? get gender;
+  @override
+  DateTime? get dateOfBirth;
+  @override
+  DateTime? get createdAt;
 
   /// Create a copy of User
   /// with the given fields replaced by the non-null parameter values.

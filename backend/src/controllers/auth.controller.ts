@@ -5,16 +5,17 @@ import { BadRequestError, UnauthorizedError, ConflictError } from '../utils/erro
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { EmailService } from '../services/email.service';
+import { generateGenderedAvatarUrl } from '../utils/avatar';
 
 export class AuthController {
   /**
    * Register a new user
-   * Flutter expects: { email, password, fullName }
+   * Flutter expects: { email, password, fullName, gender?, dateOfBirth? }
    * Returns: { token, user }
    */
   static async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const { email, password, fullName } = req.body;
+      const { email, password, fullName, gender, dateOfBirth } = req.body;
 
       // Check if user already exists
       const existingUser = await prisma.user.findUnique({
@@ -32,13 +33,22 @@ export class AuthController {
       const verificationToken = crypto.randomBytes(32).toString('hex');
       const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-      // Create user
+      // Generate a random seed for the avatar (using email + timestamp for uniqueness)
+      const avatarSeed = `${email}-${Date.now()}`;
+      // Generate gender-appropriate avatar
+      const avatarUrl = generateGenderedAvatarUrl(avatarSeed, gender || null);
+
+      // Create user with random avatar
       const user = await prisma.user.create({
         data: {
           email,
           name: fullName,
           fullName,
           emailVerified: false,
+          gender: gender || null,
+          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+          profilePhotoUrl: avatarUrl,
+          image: avatarUrl, // Better Auth field
         },
       });
 
@@ -92,6 +102,8 @@ export class AuthController {
             bio: user.bio,
             travelPreferences: user.travelPreferences,
             emailVerified: user.emailVerified,
+            gender: user.gender,
+            dateOfBirth: user.dateOfBirth,
             createdAt: user.createdAt,
           },
         },
@@ -151,6 +163,11 @@ export class AuthController {
         },
       });
 
+      // Get full user data including gender and dateOfBirth
+      const fullUser = await prisma.user.findUnique({
+        where: { id: user.id },
+      });
+
       // Format response for Flutter
       ApiResponse.success(res, {
         token: session.token,
@@ -164,6 +181,8 @@ export class AuthController {
           bio: user.bio,
           travelPreferences: user.travelPreferences,
           emailVerified: user.emailVerified,
+          gender: fullUser?.gender,
+          dateOfBirth: fullUser?.dateOfBirth,
           createdAt: user.createdAt,
         },
       });

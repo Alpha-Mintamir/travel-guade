@@ -62,14 +62,21 @@ class ProfileScreen extends ConsumerWidget {
                         fontWeight: FontWeight.bold,
                       ),
                 ),
-                const SizedBox(height: AppTheme.spacingSM),
-                // Email
-                Text(
-                  user.email,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                ),
+                // Age and gender badge
+                if (user.age != null || user.genderDisplay != null) ...[
+                  const SizedBox(height: AppTheme.spacingSM),
+                  _ProfileInfoBadge(age: user.age, genderDisplay: user.genderDisplay),
+                ],
+                if (user.email != null) ...[
+                  const SizedBox(height: AppTheme.spacingSM),
+                  // Email
+                  Text(
+                    user.email!,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                  ),
+                ],
                 if (user.cityOfResidence != null) ...[
                   const SizedBox(height: AppTheme.spacingSM),
                   Row(
@@ -204,6 +211,73 @@ class ProfileScreen extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Badge showing age and gender in a stylish way
+class _ProfileInfoBadge extends StatelessWidget {
+  final int? age;
+  final String? genderDisplay;
+
+  const _ProfileInfoBadge({this.age, this.genderDisplay});
+
+  @override
+  Widget build(BuildContext context) {
+    if (age == null && genderDisplay == null) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.softTeal.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.deepTeal.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (age != null) ...[
+            Icon(
+              Icons.cake_outlined,
+              size: 16,
+              color: AppColors.deepTeal,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '$age years old',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.deepTeal,
+              ),
+            ),
+          ],
+          if (age != null && genderDisplay != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Container(
+                width: 4,
+                height: 4,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.deepTeal.withOpacity(0.5),
+                ),
+              ),
+            ),
+          if (genderDisplay != null)
+            Text(
+              genderDisplay!,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.deepTeal,
+              ),
+            ),
+        ],
       ),
     );
   }

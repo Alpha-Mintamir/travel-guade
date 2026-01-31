@@ -204,7 +204,7 @@ class _TripCardState extends State<TripCard> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  // Creator and people needed
+                  // Creator info with age and gender
                   Row(
                     children: [
                       CircleAvatar(
@@ -218,9 +218,24 @@ class _TripCardState extends State<TripCard> {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(
-                          widget.trip.creator.fullName,
-                          style: theme.textTheme.bodySmall,
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                widget.trip.creator.fullName,
+                                style: theme.textTheme.bodySmall,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            // Age and gender badges
+                            if (widget.trip.creator.age != null || widget.trip.creator.genderShort != null) ...[
+                              const SizedBox(width: 6),
+                              _CreatorInfoBadge(
+                                age: widget.trip.creator.age,
+                                genderShort: widget.trip.creator.genderShort,
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                       Container(
@@ -265,6 +280,91 @@ class _TripCardState extends State<TripCard> {
       errorWidget: (_, __, ___) => Container(
         color: AppColors.softTeal,
         child: const Icon(Icons.image_not_supported, size: 48),
+      ),
+    );
+  }
+}
+
+/// Badge showing age and gender in a compact, stylish way
+class _CreatorInfoBadge extends StatelessWidget {
+  final int? age;
+  final String? genderShort;
+
+  const _CreatorInfoBadge({
+    this.age,
+    this.genderShort,
+  });
+
+  IconData? get _genderIcon {
+    switch (genderShort) {
+      case 'M':
+        return Icons.male;
+      case 'F':
+        return Icons.female;
+      default:
+        return null;
+    }
+  }
+
+  Color get _genderColor {
+    switch (genderShort) {
+      case 'M':
+        return AppColors.deepTeal;
+      case 'F':
+        return AppColors.warmCoral;
+      default:
+        return AppColors.textSecondary;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasAge = age != null;
+    final hasGender = genderShort != null && _genderIcon != null;
+
+    if (!hasAge && !hasGender) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: _genderColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: _genderColor.withOpacity(0.3),
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (hasAge) ...[
+            Text(
+              '$age',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: _genderColor,
+              ),
+            ),
+          ],
+          if (hasAge && hasGender)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Text(
+                '•',
+                style: TextStyle(
+                  fontSize: 8,
+                  color: _genderColor.withOpacity(0.5),
+                ),
+              ),
+            ),
+          if (hasGender)
+            Icon(
+              _genderIcon,
+              size: 14,
+              color: _genderColor,
+            ),
+        ],
       ),
     );
   }

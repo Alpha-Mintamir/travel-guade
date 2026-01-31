@@ -64,6 +64,11 @@ enum ReportStatus {
   DISMISSED
 }
 
+enum Gender {
+  MALE
+  FEMALE
+}
+
 model User {
   id                String    @id @default(uuid())
   name              String    // Required by Better Auth
@@ -80,6 +85,8 @@ model User {
   bio               String?
   travelPreferences String?   @map("travel_preferences")
   interests         String?
+  gender            Gender?
+  dateOfBirth       DateTime? @map("date_of_birth")
 
   // Better Auth relations
   sessions          Session[]

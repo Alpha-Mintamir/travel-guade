@@ -49,6 +49,8 @@ class ApiService {
     required String email,
     required String password,
     required String fullName,
+    String? gender,
+    DateTime? dateOfBirth,
   }) async {
     final response = await _dio.post(
       ApiConstants.register,
@@ -56,6 +58,8 @@ class ApiService {
         'email': email,
         'password': password,
         'fullName': fullName,
+        if (gender != null) 'gender': gender,
+        if (dateOfBirth != null) 'dateOfBirth': dateOfBirth.toIso8601String(),
       },
     );
     // Backend wraps response in 'data' field
@@ -95,6 +99,9 @@ class ApiService {
     String? bio,
     String? travelPreferences,
     String? interests,
+    String? gender,
+    DateTime? dateOfBirth,
+    String? profilePhotoUrl,
   }) async {
     final response = await _dio.patch(
       ApiConstants.updateProfile,
@@ -104,6 +111,9 @@ class ApiService {
         if (bio != null) 'bio': bio,
         if (travelPreferences != null) 'travelPreferences': travelPreferences,
         if (interests != null) 'interests': interests,
+        if (gender != null) 'gender': gender,
+        if (dateOfBirth != null) 'dateOfBirth': dateOfBirth.toIso8601String(),
+        if (profilePhotoUrl != null) 'profilePhotoUrl': profilePhotoUrl,
       },
     );
     return User.fromJson(response.data['data']);

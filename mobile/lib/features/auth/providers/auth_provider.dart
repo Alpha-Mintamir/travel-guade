@@ -49,6 +49,8 @@ class AuthState extends _$AuthState {
     required String email,
     required String password,
     required String fullName,
+    String? gender,
+    DateTime? dateOfBirth,
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
@@ -56,6 +58,8 @@ class AuthState extends _$AuthState {
             email: email,
             password: password,
             fullName: fullName,
+            gender: gender,
+            dateOfBirth: dateOfBirth,
           );
       await StorageService.saveToken(response.token);
       // Connect socket after successful registration
@@ -77,6 +81,8 @@ class AuthState extends _$AuthState {
     String? bio,
     String? travelPreferences,
     String? interests,
+    String? gender,
+    DateTime? dateOfBirth,
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
@@ -86,6 +92,8 @@ class AuthState extends _$AuthState {
             bio: bio,
             travelPreferences: travelPreferences,
             interests: interests,
+            gender: gender,
+            dateOfBirth: dateOfBirth,
           );
     });
   }

@@ -85,6 +85,8 @@ export class TripService {
             bio: true,
             travelPreferences: true,
             emailVerified: true,
+            gender: true,
+            dateOfBirth: true,
             createdAt: true,
           },
         },
@@ -126,14 +128,29 @@ export class TripService {
     // Text search across multiple fields
     if (filters.search) {
       const searchTerm = filters.search.trim();
-      where.OR = [
+      const searchTermUpper = searchTerm.toUpperCase();
+      
+      // Build OR conditions for text search
+      const orConditions: any[] = [
         { destinationName: { contains: searchTerm, mode: 'insensitive' } },
         { description: { contains: searchTerm, mode: 'insensitive' } },
-        { travelStyle: { equals: searchTerm.toUpperCase() as TravelStyle } },
-        { budgetLevel: { equals: searchTerm.toUpperCase() as BudgetLevel } },
         { creator: { fullName: { contains: searchTerm, mode: 'insensitive' } } },
         { creator: { cityOfResidence: { contains: searchTerm, mode: 'insensitive' } } },
       ];
+      
+      // Only add enum conditions if the search term matches valid enum values
+      const validTravelStyles = Object.values(TravelStyle);
+      const validBudgetLevels = Object.values(BudgetLevel);
+      
+      if (validTravelStyles.includes(searchTermUpper as TravelStyle)) {
+        orConditions.push({ travelStyle: { equals: searchTermUpper as TravelStyle } });
+      }
+      
+      if (validBudgetLevels.includes(searchTermUpper as BudgetLevel)) {
+        orConditions.push({ budgetLevel: { equals: searchTermUpper as BudgetLevel } });
+      }
+      
+      where.OR = orConditions;
     }
 
     const [trips, total] = await Promise.all([
@@ -180,6 +197,8 @@ export class TripService {
             bio: true,
             travelPreferences: true,
             emailVerified: true,
+            gender: true,
+            dateOfBirth: true,
             createdAt: true,
           },
         },
@@ -297,6 +316,8 @@ export class TripService {
             bio: true,
             travelPreferences: true,
             emailVerified: true,
+            gender: true,
+            dateOfBirth: true,
             createdAt: true,
           },
         },
@@ -419,6 +440,8 @@ export class TripService {
             bio: true,
             travelPreferences: true,
             emailVerified: true,
+            gender: true,
+            dateOfBirth: true,
             createdAt: true,
           },
         },
@@ -460,6 +483,8 @@ export class TripService {
             bio: true,
             travelPreferences: true,
             emailVerified: true,
+            gender: true,
+            dateOfBirth: true,
             createdAt: true,
           },
         },

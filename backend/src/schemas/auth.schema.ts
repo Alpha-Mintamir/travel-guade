@@ -5,6 +5,8 @@ export const registerSchema = z.object({
     email: z.string().email('Invalid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     fullName: z.string().min(1, 'Full name is required'),
+    gender: z.enum(['MALE', 'FEMALE']).optional(),
+    dateOfBirth: z.string().optional().transform((val) => val ? new Date(val) : undefined),
   }),
 });
 
